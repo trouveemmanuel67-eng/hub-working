@@ -16,8 +16,14 @@ button{cursor:pointer;background:none;border:0}
 .iconbtn{width:36px;height:36px;display:grid;place-items:center;color:#f2f2f2}
 .avatar{width:32px;height:32px;border-radius:50%;border:1px solid #3a3a3c;background:#1c1c1e;display:grid;place-items:center}
 .avatar span{font-size:11px;letter-spacing:.04em;color:#d1d1d6}
-.hero{position:relative;height:min(58vh,520px);min-height:320px;background:#0b0c0e}
-#map{width:100%;height:100%;display:block}
+.hero{position:relative;height:auto;min-height:0;background:#000}
+.mapframe{position:relative;width:100%}
+.mapframe img{width:100%;height:auto;display:block}
+.hot{position:absolute;width:48px;height:48px;border-radius:50%;transform:translate(-50%,-50%);background:transparent;padding:0}
+.choice{position:absolute;z-index:5;min-width:220px;background:#000;border:1px solid #3a3a3c;border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.choice[hidden]{display:none}
+.choice p{margin:0 2px 4px;font-size:14px}
+.choice button{border:1px solid #2c2c2e;border-radius:12px;background:#141416;padding:10px 12px;text-align:left}
 .search{position:absolute;left:16px;right:16px;top:12px;z-index:3;display:flex;align-items:center;gap:8px;background:rgba(12,12,14,.55);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:11px 16px;backdrop-filter:blur(12px)}
 .search input{flex:1;min-width:0;border:0;outline:none;background:transparent;font-size:16px}
 .search input::placeholder{color:rgba(255,255,255,.5)}
@@ -26,7 +32,8 @@ button{cursor:pointer;background:none;border:0}
 .city{cursor:pointer}
 .city .name{fill:#fff;font-family:Inter,"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:30px;font-weight:500}
 .city .role{fill:#c7c7cc;font-family:Inter,"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:.12em}
-.car{cursor:pointer}
+.car{position:absolute;width:14px;height:14px;border-radius:50%;border:2px solid #111;box-shadow:0 0 0 1px #fff;transform:translate(-50%,-50%);padding:0;cursor:pointer}
+.car.on{width:18px;height:18px;box-shadow:0 0 0 2px #fff}
 .zones{padding:22px 0 28px}
 .zones h2{margin:0 0 14px;text-align:center;font-size:15px;font-weight:400;color:#8e8e93}
 .carousel{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 16px 8px;scrollbar-width:none}
@@ -78,33 +85,17 @@ button{cursor:pointer;background:none;border:0}
   <label class="search"><span aria-hidden="true">⌕</span>
     <input id="q" type="search" placeholder="Ville, plaque, VIN, pack hiver" autocomplete="off" aria-label="Rechercher un véhicule">
   </label>
-  <svg id="map" viewBox="0 0 1000 720" role="img" aria-label="Carte de l'Alsace et de la flotte">
-    <defs>
-      <radialGradient id="relief" cx="42%" cy="48%" r="68%">
-        <stop offset="0" stop-color="#23262b"/>
-        <stop offset="55%" stop-color="#121417"/>
-        <stop offset="100%" stop-color="#07080a"/>
-      </radialGradient>
-      <filter id="halo" x="-20%" y="-20%" width="140%" height="140%">
-        <feDropShadow dx="0" dy="1" stdDeviation="1.4" flood-color="#000" flood-opacity=".8"/>
-      </filter>
-    </defs>
-    <rect width="1000" height="720" fill="url(#relief)"/>
-    <ellipse cx="230" cy="280" rx="240" ry="280" fill="#1a1d22"/>
-    <ellipse cx="180" cy="160" rx="110" ry="80" fill="#262a30"/>
-    <ellipse cx="300" cy="480" rx="130" ry="90" fill="#15181c"/>
-    <path d="M910 10 C 870 150, 940 280, 890 430 C 850 540, 920 620, 880 720" fill="none" stroke="#1c333d" stroke-width="22"/>
-    <g fill="none" stroke="#8fb4d4" stroke-linecap="round">
-      <path d="M150 360 C 230 300, 300 230, 370 200 C 470 240, 530 310, 610 390" stroke-width="3" opacity=".35"/>
-      <path d="M150 360 C 230 300, 300 230, 370 200 C 470 240, 530 310, 610 390" stroke-width="1.5"/>
-      <path d="M800 40 C 770 130, 800 210, 760 300 C 700 400, 620 470, 560 560" stroke-width="3" opacity=".35"/>
-      <path d="M800 40 C 770 130, 800 210, 760 300 C 700 400, 620 470, 560 560" stroke-width="1.5"/>
-      <path d="M840 155 C 790 190, 760 240, 700 300" stroke-width="1.4"/>
-      <path d="M560 560 C 590 500, 610 450, 640 400" stroke-width="1.3" opacity=".85"/>
-    </g>
-    <g id="cars"></g>
-    <g id="cities"></g>
-  </svg>
+  <div class="mapframe" id="mapframe">
+    <img id="basemap" src="carte-alsace.webp" alt="Carte de l'Alsace : relief, routes et Rhin">
+    <div id="hots"></div>
+    <div id="cars"></div>
+    <div id="choice" class="choice" hidden>
+      <p>Strasbourg</p>
+      <button type="button" data-id="sxb-sales">Store Sales</button>
+      <button type="button" data-id="sxb-essai">Essai libre-service</button>
+      <button type="button" id="choice-both">Les deux listes</button>
+    </div>
+  </div>
   <div class="stamp" id="stamp">Mis à jour il y a 0 s</div>
   <button type="button" class="gold" id="all">Voir la flotte</button>
 </section>
@@ -129,12 +120,12 @@ button{cursor:pointer;background:none;border:0}
    Les deux sites de Strasbourg sont volontairement proches.
    SIDEKICK peut déplacer un centre sans changer le reste des données. */
 const CENTERS = [
-  { id:"sxb-sales", city:"Strasbourg", role:"Store Sales", kind:"store", x:600, y:400 },
-  { id:"sxb-essai", city:"Strasbourg", role:"Essai libre-service", kind:"essai", x:648, y:368 },
-  { id:"rop", city:"Roppenheim", role:"Essai libre-service", kind:"essai", x:835, y:155 },
-  { id:"sel", city:"Sélestat", role:"Essai libre-service", kind:"essai", x:545, y:560 },
-  { id:"sav", city:"Saverne", role:"Essai libre-service", kind:"essai", x:370, y:200 },
-  { id:"sar", city:"Sarrebourg", role:"Essai libre-service", kind:"essai", x:175, y:355 }
+  { id:"sxb-sales", city:"Strasbourg", role:"Store Sales", kind:"store", x:65.2, y:34.7 },
+  { id:"sxb-essai", city:"Strasbourg", role:"Essai libre-service", kind:"essai", x:65.2, y:34.7 },
+  { id:"rop", city:"Roppenheim", role:"Essai libre-service", kind:"essai", x:80.7, y:9.5 },
+  { id:"sel", city:"Sélestat", role:"Essai libre-service", kind:"essai", x:50.9, y:72.9 },
+  { id:"sav", city:"Saverne", role:"Essai libre-service", kind:"essai", x:37.5, y:10 },
+  { id:"sar", city:"Sarrebourg", role:"Essai libre-service", kind:"essai", x:10.5, y:12.5 }
 ];
 
 /* FLOTTE FICTIVE DE DÉMONSTRATION.
@@ -152,38 +143,38 @@ const CENTERS = [
    - winter   true si le véhicule a le pack hiver
    - x, y     position de départ sur la carte */
 const FLEET = [
-  { id:"v01", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000001", plate:"FT-101-AL", center:"sxb-sales", status:"disponible", battery:86, winter:true, x:582, y:388 },
-  { id:"v02", model:"Model 3", color:"Noir", swatch:"#2c2e33", vin:"LRW30TEST0000002", plate:"FT-118-SX", center:"sxb-sales", status:"en essai", battery:64, winter:false, x:618, y:416 },
-  { id:"v03", model:"Model Y", color:"Bleu", swatch:"#8aa4b5", vin:"LRWY0TEST0000003", plate:"FT-132-AL", center:"sxb-sales", status:"disponible", battery:91, winter:true, x:568, y:412 },
-  { id:"v04", model:"Model 3", color:"Rouge", swatch:"#9a6a6a", vin:"LRW30TEST0000004", plate:"FT-145-ST", center:"sxb-sales", status:"en charge", battery:41, winter:false, x:632, y:392 },
-  { id:"v05", model:"Model Y", color:"Gris", swatch:"#b0b3b8", vin:"LRWY0TEST0000005", plate:"FT-160-SX", center:"sxb-sales", status:"disponible", battery:73, winter:true, x:608, y:432 },
-  { id:"v06", model:"Model 3", color:"Blanc", swatch:"#f7f4ee", vin:"LRW30TEST0000006", plate:"FT-173-AL", center:"sxb-sales", status:"indisponible", battery:19, winter:false, x:560, y:372 },
-  { id:"v07", model:"Model Y", color:"Noir", swatch:"#3a3d44", vin:"LRWY0TEST0000007", plate:"FT-186-ST", center:"sxb-sales", status:"en essai", battery:88, winter:true, x:636, y:424 },
-  { id:"v08", model:"Model 3", color:"Gris", swatch:"#b0b3b8", vin:"LRW30TEST0000008", plate:"FT-201-AL", center:"sxb-essai", status:"disponible", battery:77, winter:false, x:630, y:352 },
-  { id:"v09", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000009", plate:"FT-214-SX", center:"sxb-essai", status:"disponible", battery:95, winter:true, x:668, y:380 },
-  { id:"v10", model:"Model 3", color:"Bleu", swatch:"#8aa4b5", vin:"LRW30TEST0000010", plate:"FT-227-ST", center:"sxb-essai", status:"en essai", battery:52, winter:false, x:622, y:386 },
-  { id:"v11", model:"Model Y", color:"Rouge", swatch:"#9a6a6a", vin:"LRWY0TEST0000011", plate:"FT-240-AL", center:"sxb-essai", status:"en charge", battery:33, winter:true, x:676, y:356 },
-  { id:"v12", model:"Model 3", color:"Noir", swatch:"#3a3d44", vin:"LRW30TEST0000012", plate:"FT-253-SX", center:"sxb-essai", status:"indisponible", battery:68, winter:false, x:652, y:334 },
-  { id:"v13", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000013", plate:"FT-301-AL", center:"rop", status:"disponible", battery:81, winter:true, x:814, y:138 },
-  { id:"v14", model:"Model 3", color:"Bleu", swatch:"#8aa4b5", vin:"LRW30TEST0000014", plate:"FT-314-ST", center:"rop", status:"en essai", battery:58, winter:false, x:862, y:172 },
-  { id:"v15", model:"Model Y", color:"Gris", swatch:"#b0b3b8", vin:"LRWY0TEST0000015", plate:"FT-327-SX", center:"rop", status:"disponible", battery:90, winter:true, x:820, y:182 },
-  { id:"v16", model:"Model 3", color:"Rouge", swatch:"#9a6a6a", vin:"LRW30TEST0000016", plate:"FT-340-AL", center:"rop", status:"en charge", battery:27, winter:false, x:792, y:170 },
-  { id:"v17", model:"Model Y", color:"Noir", swatch:"#3a3d44", vin:"LRWY0TEST0000017", plate:"FT-353-ST", center:"rop", status:"disponible", battery:74, winter:false, x:854, y:128 },
-  { id:"v18", model:"Model 3", color:"Blanc", swatch:"#f7f4ee", vin:"LRW30TEST0000018", plate:"FT-401-AL", center:"sel", status:"disponible", battery:83, winter:true, x:522, y:542 },
-  { id:"v19", model:"Model Y", color:"Bleu", swatch:"#8aa4b5", vin:"LRWY0TEST0000019", plate:"FT-414-SX", center:"sel", status:"en essai", battery:66, winter:true, x:572, y:574 },
-  { id:"v20", model:"Model 3", color:"Gris", swatch:"#b0b3b8", vin:"LRW30TEST0000020", plate:"FT-427-ST", center:"sel", status:"disponible", battery:49, winter:false, x:506, y:584 },
-  { id:"v21", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000021", plate:"FT-440-AL", center:"sel", status:"disponible", battery:92, winter:true, x:582, y:538 },
-  { id:"v22", model:"Model 3", color:"Noir", swatch:"#3a3d44", vin:"LRW30TEST0000022", plate:"FT-453-SX", center:"sel", status:"indisponible", battery:15, winter:false, x:532, y:598 },
-  { id:"v23", model:"Model Y", color:"Rouge", swatch:"#9a6a6a", vin:"LRWY0TEST0000023", plate:"FT-466-ST", center:"sel", status:"en charge", battery:71, winter:true, x:490, y:554 },
-  { id:"v24", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000024", plate:"FT-501-AL", center:"sav", status:"disponible", battery:79, winter:true, x:348, y:184 },
-  { id:"v25", model:"Model 3", color:"Bleu", swatch:"#8aa4b5", vin:"LRW30TEST0000025", plate:"FT-514-SX", center:"sav", status:"en essai", battery:55, winter:false, x:402, y:222 },
-  { id:"v26", model:"Model Y", color:"Gris", swatch:"#b0b3b8", vin:"LRWY0TEST0000026", plate:"FT-527-ST", center:"sav", status:"disponible", battery:87, winter:true, x:338, y:230 },
-  { id:"v27", model:"Model 3", color:"Rouge", swatch:"#9a6a6a", vin:"LRW30TEST0000027", plate:"FT-540-AL", center:"sav", status:"en charge", battery:38, winter:false, x:416, y:180 },
-  { id:"v28", model:"Model 3", color:"Blanc", swatch:"#f7f4ee", vin:"LRW30TEST0000028", plate:"FT-601-AL", center:"sar", status:"disponible", battery:80, winter:false, x:154, y:338 },
-  { id:"v29", model:"Model Y", color:"Noir", swatch:"#3a3d44", vin:"LRWY0TEST0000029", plate:"FT-614-SX", center:"sar", status:"en essai", battery:63, winter:true, x:206, y:374 },
-  { id:"v30", model:"Model 3", color:"Gris", swatch:"#b0b3b8", vin:"LRW30TEST0000030", plate:"FT-627-ST", center:"sar", status:"en charge", battery:44, winter:false, x:142, y:384 },
-  { id:"v31", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000031", plate:"FT-640-AL", center:"sar", status:"disponible", battery:96, winter:true, x:208, y:332 },
-  { id:"v32", model:"Model 3", color:"Bleu", swatch:"#8aa4b5", vin:"LRW30TEST0000032", plate:"FT-653-SX", center:"sar", status:"indisponible", battery:22, winter:false, x:178, y:398 }
+  { id:"v01", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000001", plate:"FT-101-AL", center:"sxb-sales", status:"disponible", battery:86, winter:true, x:62.0, y:39.3 },
+  { id:"v02", model:"Model 3", color:"Noir", swatch:"#2c2e33", vin:"LRW30TEST0000002", plate:"FT-118-SX", center:"sxb-sales", status:"en essai", battery:64, winter:false, x:63.6, y:40.1 },
+  { id:"v03", model:"Model Y", color:"Bleu", swatch:"#8aa4b5", vin:"LRWY0TEST0000003", plate:"FT-132-AL", center:"sxb-sales", status:"disponible", battery:91, winter:true, x:61.2, y:40.7 },
+  { id:"v04", model:"Model 3", color:"Rouge", swatch:"#9a6a6a", vin:"LRW30TEST0000004", plate:"FT-145-ST", center:"sxb-sales", status:"en charge", battery:41, winter:false, x:64.8, y:39.5 },
+  { id:"v05", model:"Model Y", color:"Gris", swatch:"#b0b3b8", vin:"LRWY0TEST0000005", plate:"FT-160-SX", center:"sxb-sales", status:"disponible", battery:73, winter:true, x:63.0, y:41.3 },
+  { id:"v06", model:"Model 3", color:"Blanc", swatch:"#f7f4ee", vin:"LRW30TEST0000006", plate:"FT-173-AL", center:"sxb-sales", status:"indisponible", battery:19, winter:false, x:60.8, y:38.5 },
+  { id:"v07", model:"Model Y", color:"Noir", swatch:"#3a3d44", vin:"LRWY0TEST0000007", plate:"FT-186-ST", center:"sxb-sales", status:"en essai", battery:88, winter:true, x:64.4, y:41.9 },
+  { id:"v08", model:"Model 3", color:"Gris", swatch:"#b0b3b8", vin:"LRW30TEST0000008", plate:"FT-201-AL", center:"sxb-essai", status:"disponible", battery:77, winter:false, x:62.8, y:42.3 },
+  { id:"v09", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000009", plate:"FT-214-SX", center:"sxb-essai", status:"disponible", battery:95, winter:true, x:64.4, y:43.1 },
+  { id:"v10", model:"Model 3", color:"Bleu", swatch:"#8aa4b5", vin:"LRW30TEST0000010", plate:"FT-227-ST", center:"sxb-essai", status:"en essai", battery:52, winter:false, x:61.6, y:42.7 },
+  { id:"v11", model:"Model Y", color:"Rouge", swatch:"#9a6a6a", vin:"LRWY0TEST0000011", plate:"FT-240-AL", center:"sxb-essai", status:"en charge", battery:33, winter:true, x:63.6, y:43.7 },
+  { id:"v12", model:"Model 3", color:"Noir", swatch:"#3a3d44", vin:"LRW30TEST0000012", plate:"FT-253-SX", center:"sxb-essai", status:"indisponible", battery:68, winter:false, x:62.2, y:44.1 },
+  { id:"v13", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000013", plate:"FT-301-AL", center:"rop", status:"disponible", battery:81, winter:true, x:82.7, y:12.3 },
+  { id:"v14", model:"Model 3", color:"Bleu", swatch:"#8aa4b5", vin:"LRW30TEST0000014", plate:"FT-314-ST", center:"rop", status:"en essai", battery:58, winter:false, x:83.9, y:13.1 },
+  { id:"v15", model:"Model Y", color:"Gris", swatch:"#b0b3b8", vin:"LRWY0TEST0000015", plate:"FT-327-SX", center:"rop", status:"disponible", battery:90, winter:true, x:82.1, y:13.7 },
+  { id:"v16", model:"Model 3", color:"Rouge", swatch:"#9a6a6a", vin:"LRW30TEST0000016", plate:"FT-340-AL", center:"rop", status:"en charge", battery:27, winter:false, x:84.3, y:11.7 },
+  { id:"v17", model:"Model Y", color:"Noir", swatch:"#3a3d44", vin:"LRWY0TEST0000017", plate:"FT-353-ST", center:"rop", status:"disponible", battery:74, winter:false, x:83.1, y:14.3 },
+  { id:"v18", model:"Model 3", color:"Blanc", swatch:"#f7f4ee", vin:"LRW30TEST0000018", plate:"FT-401-AL", center:"sel", status:"disponible", battery:83, winter:true, x:48.3, y:76.3 },
+  { id:"v19", model:"Model Y", color:"Bleu", swatch:"#8aa4b5", vin:"LRWY0TEST0000019", plate:"FT-414-SX", center:"sel", status:"en essai", battery:66, winter:true, x:49.7, y:77.1 },
+  { id:"v20", model:"Model 3", color:"Gris", swatch:"#b0b3b8", vin:"LRW30TEST0000020", plate:"FT-427-ST", center:"sel", status:"disponible", battery:49, winter:false, x:47.3, y:76.9 },
+  { id:"v21", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000021", plate:"FT-440-AL", center:"sel", status:"disponible", battery:92, winter:true, x:50.5, y:76.1 },
+  { id:"v22", model:"Model 3", color:"Noir", swatch:"#3a3d44", vin:"LRW30TEST0000022", plate:"FT-453-SX", center:"sel", status:"indisponible", battery:15, winter:false, x:48.9, y:77.9 },
+  { id:"v23", model:"Model Y", color:"Rouge", swatch:"#9a6a6a", vin:"LRWY0TEST0000023", plate:"FT-466-ST", center:"sel", status:"en charge", battery:71, winter:true, x:47.7, y:75.5 },
+  { id:"v24", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000024", plate:"FT-501-AL", center:"sav", status:"disponible", battery:79, winter:true, x:34.9, y:12.8 },
+  { id:"v25", model:"Model 3", color:"Bleu", swatch:"#8aa4b5", vin:"LRW30TEST0000025", plate:"FT-514-SX", center:"sav", status:"en essai", battery:55, winter:false, x:36.3, y:13.6 },
+  { id:"v26", model:"Model Y", color:"Gris", swatch:"#b0b3b8", vin:"LRWY0TEST0000026", plate:"FT-527-ST", center:"sav", status:"disponible", battery:87, winter:true, x:34.1, y:13.4 },
+  { id:"v27", model:"Model 3", color:"Rouge", swatch:"#9a6a6a", vin:"LRW30TEST0000027", plate:"FT-540-AL", center:"sav", status:"en charge", battery:38, winter:false, x:37.7, y:12.4 },
+  { id:"v28", model:"Model 3", color:"Blanc", swatch:"#f7f4ee", vin:"LRW30TEST0000028", plate:"FT-601-AL", center:"sar", status:"disponible", battery:80, winter:false, x:8.1, y:15.3 },
+  { id:"v29", model:"Model Y", color:"Noir", swatch:"#3a3d44", vin:"LRWY0TEST0000029", plate:"FT-614-SX", center:"sar", status:"en essai", battery:63, winter:true, x:9.7, y:16.1 },
+  { id:"v30", model:"Model 3", color:"Gris", swatch:"#b0b3b8", vin:"LRW30TEST0000030", plate:"FT-627-ST", center:"sar", status:"en charge", battery:44, winter:false, x:7.3, y:15.9 },
+  { id:"v31", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000031", plate:"FT-640-AL", center:"sar", status:"disponible", battery:96, winter:true, x:11.1, y:14.9 },
+  { id:"v32", model:"Model 3", color:"Bleu", swatch:"#8aa4b5", vin:"LRW30TEST0000032", plate:"FT-653-SX", center:"sar", status:"indisponible", battery:22, winter:false, x:8.9, y:16.9 }
 ];
 
 const STATUS = { disponible:"Disponible", "en essai":"En essai", "en charge":"En charge", indisponible:"Indisponible" };
@@ -213,65 +204,45 @@ function inScope(v){
 function visible(v){return hit(v)&&inScope(v)}
 function stampText(){return "Mis à jour il y a "+Math.max(0,Math.round((Date.now()-lastPulse)/1000))+" s"}
 
+const HOTS=[
+  {city:"Sarrebourg", x:10.5, y:12.5},
+  {city:"Saverne", x:37.5, y:10},
+  {city:"Roppenheim", x:80.7, y:9.5},
+  {city:"Strasbourg", x:65.2, y:34.7},
+  {city:"Sélestat", x:50.9, y:72.9}
+];
 function drawCities(){
-  const g=$("cities");
+  const g=$("hots");
   g.innerHTML="";
-  const seen=new Set();
-  for(const c of CENTERS){
-    if(seen.has(c.city)) continue;
-    seen.add(c.city);
-    const mates=CENTERS.filter(x=>x.city===c.city);
-    const x=mates.reduce((s,m)=>s+m.x,0)/mates.length;
-    const y=Math.min(...mates.map(m=>m.y))-18;
-    const node=document.createElementNS("http://www.w3.org/2000/svg","g");
-    node.setAttribute("class","city");
-    node.setAttribute("tabindex","0");
-    node.setAttribute("role","button");
-    node.setAttribute("aria-label",c.city);
-    const name=document.createElementNS("http://www.w3.org/2000/svg","text");
-    name.setAttribute("class","name");
-    name.setAttribute("x",x); name.setAttribute("y",y);
-    name.setAttribute("text-anchor","middle");
-    name.setAttribute("filter","url(#halo)");
-    name.textContent=c.city;
-    node.append(name);
-    const open=()=>openCity(c.city);
-    node.addEventListener("click",open);
-    node.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); open(); }});
-    g.append(node);
-  }
-  for(const c of CENTERS){
-    const pin=document.createElementNS("http://www.w3.org/2000/svg","circle");
-    pin.setAttribute("cx",c.x); pin.setAttribute("cy",c.y); pin.setAttribute("r","4.5");
-    pin.setAttribute("fill",c.kind==="store"?"#f2f2f2":"#c7c7cc");
-    pin.setAttribute("stroke","#000"); pin.setAttribute("stroke-width","1");
-    pin.style.cursor="pointer";
-    pin.addEventListener("click",e=>{ e.stopPropagation(); openCenter(c.id); });
-    g.append(pin);
+  for(const h of HOTS){
+    const b=document.createElement("button");
+    b.type="button";
+    b.className="hot";
+    b.style.left=h.x+"%";
+    b.style.top=h.y+"%";
+    b.setAttribute("aria-label",h.city);
+    b.addEventListener("click",()=>openCity(h.city));
+    g.append(b);
   }
 }
 function paintCar(dot,v,t){
   const p=place(v,t);
-  dot.setAttribute("cx",p.x); dot.setAttribute("cy",p.y);
-  dot.setAttribute("r",selected===v.id?"7.5":"5");
-  dot.setAttribute("stroke",selected===v.id?"#fff":"#111");
-  dot.setAttribute("stroke-width",selected===v.id?"2":"1");
-  dot.setAttribute("opacity",hit(v)?"1":".2");
+  dot.style.left=p.x+"%";
+  dot.style.top=p.y+"%";
+  dot.style.background=v.swatch;
+  dot.classList.toggle("on", selected===v.id);
+  dot.style.opacity=hit(v)?"1":".25";
 }
 function drawCars(t){
   const g=$("cars");
   if(g.childElementCount!==FLEET.length){
     g.innerHTML="";
     for(const v of FLEET){
-      const dot=document.createElementNS("http://www.w3.org/2000/svg","circle");
-      dot.setAttribute("class","car");
-      dot.setAttribute("fill",v.swatch);
-      dot.setAttribute("tabindex","0");
-      dot.setAttribute("role","button");
+      const dot=document.createElement("button");
+      dot.type="button";
+      dot.className="car";
       dot.setAttribute("aria-label",v.model+" "+v.plate);
-      const go=()=>openVehicle(v.id);
-      dot.addEventListener("click",e=>{ e.stopPropagation(); go(); });
-      dot.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); go(); }});
+      dot.addEventListener("click",e=>{ e.stopPropagation(); openVehicle(v.id); });
       g.append(dot);
     }
   }
@@ -355,24 +326,30 @@ function renderList(){
   list.querySelectorAll(".row").forEach(btn=>btn.addEventListener("click",()=>openVehicle(btn.dataset.id)));
 }
 function openSheet(){ $("sheet").hidden=false; renderList(); }
-function openCity(city){ scope="city:"+city; selected=null; resetView(); openSheet(); drawCars(performance.now()); }
-function openCenter(id){ scope=id; selected=null; resetView(); openSheet(); drawCars(performance.now()); }
-function openAll(){ scope=null; selected=null; query=""; $("q").value=""; resetView(); openSheet(); drawCars(performance.now()); }
+function openCity(city){
+  if(city==="Strasbourg"){
+    const box=$("choice");
+    box.hidden=false;
+    box.style.left="65.2%";
+    box.style.top="38%";
+    return;
+  }
+  const c=CENTERS.find(x=>x.city===city);
+  openCenter(c.id);
+}
+function openCenter(id){ $("choice").hidden=true; scope=id; selected=null; openSheet(); drawCars(performance.now()); }
+function openBoth(){ $("choice").hidden=true; scope="city:Strasbourg"; selected=null; openSheet(); drawCars(performance.now()); }
+function openAll(){ $("choice").hidden=true; scope=null; selected=null; query=""; $("q").value=""; openSheet(); drawCars(performance.now()); }
 function openVehicle(id){
   const v=FLEET.find(x=>x.id===id); if(!v) return;
   selected=id; scope=v.center;
-  const p=place(v,performance.now());
-  target={x:p.x-280,y:p.y-200,w:560,h:400};
+  $("choice").hidden=true;
   openSheet(); drawCars(performance.now());
 }
-function resetView(){ target={x:0,y:0,w:1000,h:720}; }
 function tick(t){
   $("stamp").textContent=stampText();
   if(!$("sheet").hidden) $("pcount").textContent=FLEET.filter(visible).length+" véhicule"+(FLEET.filter(visible).length>1?"s":"")+" · "+stampText();
   drawCars(t);
-  view.x+=(target.x-view.x)*.12; view.y+=(target.y-view.y)*.12;
-  view.w+=(target.w-view.w)*.12; view.h+=(target.h-view.h)*.12;
-  $("map").setAttribute("viewBox",`${view.x.toFixed(1)} ${view.y.toFixed(1)} ${view.w.toFixed(1)} ${view.h.toFixed(1)}`);
   requestAnimationFrame(tick);
 }
 $("q").addEventListener("input",e=>{
@@ -382,7 +359,9 @@ $("q").addEventListener("input",e=>{
   drawCars(performance.now());
 });
 $("all").addEventListener("click",openAll);
-$("close").addEventListener("click",()=>{ $("sheet").hidden=true; selected=null; scope=null; resetView(); drawCars(performance.now()); });
+$("close").addEventListener("click",()=>{ $("sheet").hidden=true; $("choice").hidden=true; selected=null; scope=null; drawCars(performance.now()); });
+$("choice").querySelectorAll("[data-id]").forEach(b=>b.addEventListener("click",()=>openCenter(b.dataset.id)));
+$("choice-both").addEventListener("click",openBoth);
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") $("close").click(); });
 drawCities();
 drawCarousel();
