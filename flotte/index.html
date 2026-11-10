@@ -16,23 +16,21 @@ button{cursor:pointer;background:none;border:0}
 .iconbtn{width:36px;height:36px;display:grid;place-items:center;color:#f2f2f2}
 .avatar{width:32px;height:32px;border-radius:50%;border:1px solid #3a3a3c;background:#1c1c1e;display:grid;place-items:center}
 .avatar span{font-size:11px;letter-spacing:.04em;color:#d1d1d6}
-.hero{position:relative;height:auto;min-height:0;background:#000}
-.mapframe{position:relative;width:100%}
-.mapframe img{width:100%;height:auto;display:block}
-.hot{position:absolute;width:48px;height:48px;border-radius:50%;transform:translate(-50%,-50%);background:transparent;padding:0}
+.hero{position:relative;background:#000}
+.search{position:relative;z-index:3;display:flex;align-items:center;gap:8px;margin:12px 16px 8px;background:rgba(12,12,14,.55);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:11px 16px;backdrop-filter:blur(12px)}
+.stage{position:relative;width:min(100%, calc((100vh - 168px) * 2920 / 2064));margin:0 auto}
+.mapframe{position:relative;width:100%;aspect-ratio:2920 / 2064;background:#000}
+.mapframe img{width:100%;height:100%;display:block;object-fit:contain;filter:none;opacity:1}
+.hot{position:absolute;z-index:2;width:48px;height:48px;border-radius:50%;transform:translate(-50%,-50%);background:transparent;padding:0}
 .choice{position:absolute;z-index:5;min-width:220px;background:#000;border:1px solid #3a3a3c;border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:6px}
 .choice[hidden]{display:none}
 .choice p{margin:0 2px 4px;font-size:14px}
 .choice button{border:1px solid #2c2c2e;border-radius:12px;background:#141416;padding:10px 12px;text-align:left}
-.search{position:absolute;left:16px;right:16px;top:12px;z-index:3;display:flex;align-items:center;gap:8px;background:rgba(12,12,14,.55);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:11px 16px;backdrop-filter:blur(12px)}
 .search input{flex:1;min-width:0;border:0;outline:none;background:transparent;font-size:16px}
 .search input::placeholder{color:rgba(255,255,255,.5)}
-.stamp{position:absolute;left:14px;bottom:76px;z-index:3;font-size:12px;color:rgba(255,255,255,.72);background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:6px 10px}
+.stamp{position:absolute;left:14px;bottom:76px;z-index:3;font-size:12px;color:rgba(255,255,255,.72);background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:6px 10px;pointer-events:none}
 .gold{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:4;border-radius:999px;padding:15px 36px;font-size:17px;font-weight:600;letter-spacing:.01em;color:#241b0d;background:linear-gradient(180deg,#f6e7bf,#e4c27a 46%,#b8893e);box-shadow:0 8px 22px rgba(0,0,0,.35)}
-.city{cursor:pointer}
-.city .name{fill:#fff;font-family:Inter,"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:30px;font-weight:500}
-.city .role{fill:#c7c7cc;font-family:Inter,"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:.12em}
-.car{position:absolute;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #000;transform:translate(-50%,-50%);padding:0;cursor:pointer}
+.car{position:absolute;z-index:3;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #000;transform:translate(-50%,-50%);padding:0;cursor:pointer}
 .car.on{width:18px;height:18px;box-shadow:0 0 0 2px #fff}
 .zones{padding:22px 0 28px}
 .zones h2{margin:0 0 14px;text-align:center;font-size:15px;font-weight:400;color:#8e8e93}
@@ -64,9 +62,13 @@ button{cursor:pointer;background:none;border:0}
 .pill{font-size:11px;border-radius:999px;padding:4px 8px;border:1px solid #3a3a3c;color:#d1d1d6;white-space:nowrap}
 .empty{color:#8e8e93}
 :focus-visible{outline:2px solid #fff;outline-offset:2px}
+@media(max-width:700px){
+  .stamp{position:relative;left:auto;bottom:auto;display:table;margin:10px 14px 0}
+  .gold{position:relative;left:auto;bottom:auto;transform:none;display:block;margin:12px auto 4px}
+}
 @media(min-width:900px){
-  .hero{height:min(62vh,540px)}
   .stamp{bottom:18px}
+  .gold{bottom:22px}
   .zcard{flex-basis:300px}
   .sheet{left:auto;width:420px;border-left:1px solid #2c2c2e}
 }
@@ -85,19 +87,21 @@ button{cursor:pointer;background:none;border:0}
   <label class="search"><span aria-hidden="true">⌕</span>
     <input id="q" type="search" placeholder="Ville, plaque, VIN, pack hiver" autocomplete="off" aria-label="Rechercher un véhicule">
   </label>
-  <div class="mapframe" id="mapframe">
-    <img id="basemap" src="carte-alsace.png" alt="Carte de l'Alsace : relief, routes et Rhin">
-    <div id="hots"></div>
-    <div id="cars"></div>
-    <div id="choice" class="choice" hidden>
-      <p>Strasbourg</p>
-      <button type="button" data-id="sxb-sales">Store Sales</button>
-      <button type="button" data-id="sxb-essai">Essai libre-service</button>
-      <button type="button" id="choice-both">Les deux listes</button>
+  <div class="stage">
+    <div class="mapframe" id="mapframe">
+      <img id="basemap" src="carte-alsace.png" alt="Carte de l'Alsace">
+      <div id="hots"></div>
+      <div id="cars"></div>
+      <div id="choice" class="choice" hidden>
+        <p>Strasbourg</p>
+        <button type="button" data-id="sxb-sales">Store Sales</button>
+        <button type="button" data-id="sxb-essai">Essai libre-service</button>
+        <button type="button" id="choice-both">Les deux listes</button>
+      </div>
     </div>
+    <div class="stamp" id="stamp">Mis à jour il y a 0 s</div>
+    <button type="button" class="gold" id="all">Voir la flotte</button>
   </div>
-  <div class="stamp" id="stamp">Mis à jour il y a 0 s</div>
-  <button type="button" class="gold" id="all">Voir la flotte</button>
 </section>
 <section class="zones">
   <h2>Nos centres</h2>
@@ -120,12 +124,12 @@ button{cursor:pointer;background:none;border:0}
    Les deux sites de Strasbourg sont volontairement proches.
    SIDEKICK peut déplacer un centre sans changer le reste des données. */
 const CENTERS = [
-  { id:"sxb-sales", city:"Strasbourg", role:"Store Sales", kind:"store", x:65.2, y:34.7 },
-  { id:"sxb-essai", city:"Strasbourg", role:"Essai libre-service", kind:"essai", x:65.2, y:34.7 },
-  { id:"rop", city:"Roppenheim", role:"Essai libre-service", kind:"essai", x:80.7, y:9.5 },
-  { id:"sel", city:"Sélestat", role:"Essai libre-service", kind:"essai", x:50.9, y:72.9 },
-  { id:"sav", city:"Saverne", role:"Essai libre-service", kind:"essai", x:37.5, y:10 },
-  { id:"sar", city:"Sarrebourg", role:"Essai libre-service", kind:"essai", x:10.5, y:12.5 }
+  { id:"sxb-sales", city:"Strasbourg", role:"Store Sales", kind:"store", x:65.0, y:34.7 },
+  { id:"sxb-essai", city:"Strasbourg", role:"Essai libre-service", kind:"essai", x:65.0, y:34.7 },
+  { id:"rop", city:"Roppenheim", role:"Essai libre-service", kind:"essai", x:80.4, y:9.4 },
+  { id:"sel", city:"Sélestat", role:"Essai libre-service", kind:"essai", x:50.9, y:73.3 },
+  { id:"sav", city:"Saverne", role:"Essai libre-service", kind:"essai", x:37.4, y:9.9 },
+  { id:"sar", city:"Sarrebourg", role:"Essai libre-service", kind:"essai", x:10.3, y:12.6 }
 ];
 
 /* FLOTTE FICTIVE DE DÉMONSTRATION.
@@ -155,11 +159,11 @@ const FLEET = [
   { id:"v10", model:"Model 3", color:"Bleu", swatch:"#8aa4b5", vin:"LRW30TEST0000010", plate:"FT-227-ST", center:"sxb-essai", status:"en essai", battery:52, winter:false, x:61.6, y:42.7 },
   { id:"v11", model:"Model Y", color:"Rouge", swatch:"#9a6a6a", vin:"LRWY0TEST0000011", plate:"FT-240-AL", center:"sxb-essai", status:"en charge", battery:33, winter:true, x:63.6, y:43.7 },
   { id:"v12", model:"Model 3", color:"Noir", swatch:"#3a3d44", vin:"LRW30TEST0000012", plate:"FT-253-SX", center:"sxb-essai", status:"indisponible", battery:68, winter:false, x:62.2, y:44.1 },
-  { id:"v13", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000013", plate:"FT-301-AL", center:"rop", status:"disponible", battery:81, winter:true, x:82.7, y:12.3 },
-  { id:"v14", model:"Model 3", color:"Bleu", swatch:"#8aa4b5", vin:"LRW30TEST0000014", plate:"FT-314-ST", center:"rop", status:"en essai", battery:58, winter:false, x:83.9, y:13.1 },
-  { id:"v15", model:"Model Y", color:"Gris", swatch:"#b0b3b8", vin:"LRWY0TEST0000015", plate:"FT-327-SX", center:"rop", status:"disponible", battery:90, winter:true, x:82.1, y:13.7 },
-  { id:"v16", model:"Model 3", color:"Rouge", swatch:"#9a6a6a", vin:"LRW30TEST0000016", plate:"FT-340-AL", center:"rop", status:"en charge", battery:27, winter:false, x:84.3, y:11.7 },
-  { id:"v17", model:"Model Y", color:"Noir", swatch:"#3a3d44", vin:"LRWY0TEST0000017", plate:"FT-353-ST", center:"rop", status:"disponible", battery:74, winter:false, x:83.1, y:14.3 },
+  { id:"v13", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000013", plate:"FT-301-AL", center:"rop", status:"disponible", battery:81, winter:true, x:77.2, y:13.2 },
+  { id:"v14", model:"Model 3", color:"Bleu", swatch:"#8aa4b5", vin:"LRW30TEST0000014", plate:"FT-314-ST", center:"rop", status:"en essai", battery:58, winter:false, x:78.6, y:14.0 },
+  { id:"v15", model:"Model Y", color:"Gris", swatch:"#b0b3b8", vin:"LRWY0TEST0000015", plate:"FT-327-SX", center:"rop", status:"disponible", battery:90, winter:true, x:76.4, y:14.4 },
+  { id:"v16", model:"Model 3", color:"Rouge", swatch:"#9a6a6a", vin:"LRW30TEST0000016", plate:"FT-340-AL", center:"rop", status:"en charge", battery:27, winter:false, x:79.4, y:12.8 },
+  { id:"v17", model:"Model Y", color:"Noir", swatch:"#3a3d44", vin:"LRWY0TEST0000017", plate:"FT-353-ST", center:"rop", status:"disponible", battery:74, winter:false, x:77.8, y:15.2 },
   { id:"v18", model:"Model 3", color:"Blanc", swatch:"#f7f4ee", vin:"LRW30TEST0000018", plate:"FT-401-AL", center:"sel", status:"disponible", battery:83, winter:true, x:48.3, y:76.3 },
   { id:"v19", model:"Model Y", color:"Bleu", swatch:"#8aa4b5", vin:"LRWY0TEST0000019", plate:"FT-414-SX", center:"sel", status:"en essai", battery:66, winter:true, x:48.2, y:78.4 },
   { id:"v20", model:"Model 3", color:"Gris", swatch:"#b0b3b8", vin:"LRW30TEST0000020", plate:"FT-427-ST", center:"sel", status:"disponible", battery:49, winter:false, x:47.3, y:76.9 },
@@ -188,7 +192,7 @@ setInterval(()=>{ lastPulse=Date.now(); }, 4000);
 
 function norm(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()}
 function esc(s){return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}
-function place(v,t){return {x:v.x+Math.sin(t/1400+v.phase)*7, y:v.y+Math.cos(t/1700+v.phase)*5}}
+function place(v,t){return {x:v.x+Math.sin(t/1400+v.phase)*0.55, y:v.y+Math.cos(t/1700+v.phase)*0.4}}
 function hit(v){
   const q=norm(query).trim();
   if(!q) return true;
@@ -205,11 +209,11 @@ function visible(v){return hit(v)&&inScope(v)}
 function stampText(){return "Mis à jour il y a "+Math.max(0,Math.round((Date.now()-lastPulse)/1000))+" s"}
 
 const HOTS=[
-  {city:"Sarrebourg", x:10.5, y:12.5},
-  {city:"Saverne", x:37.5, y:10},
-  {city:"Roppenheim", x:80.7, y:9.5},
-  {city:"Strasbourg", x:65.2, y:34.7},
-  {city:"Sélestat", x:50.9, y:72.9}
+  {city:"Sarrebourg", x:10.3, y:12.6},
+  {city:"Saverne", x:37.4, y:9.9},
+  {city:"Roppenheim", x:80.4, y:9.4},
+  {city:"Strasbourg", x:65.0, y:34.7},
+  {city:"Sélestat", x:50.9, y:73.3}
 ];
 function drawCities(){
   const g=$("hots");
@@ -330,8 +334,8 @@ function openCity(city){
   if(city==="Strasbourg"){
     const box=$("choice");
     box.hidden=false;
-    box.style.left="65.2%";
-    box.style.top="38%";
+    box.style.left="65%";
+    box.style.top="40%";
     return;
   }
   const c=CENTERS.find(x=>x.city===city);
