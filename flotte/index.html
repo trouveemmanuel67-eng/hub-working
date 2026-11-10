@@ -21,17 +21,10 @@ button{cursor:pointer;background:none;border:0}
 .stage{position:relative;width:min(100%, calc((100vh - 168px) * 2920 / 2064));margin:0 auto}
 .mapframe{position:relative;width:100%;aspect-ratio:2920 / 2064;background:#000}
 .mapframe img{width:100%;height:100%;display:block;object-fit:contain;filter:none;opacity:1}
-.hot{position:absolute;z-index:2;width:48px;height:48px;border-radius:50%;transform:translate(-50%,-50%);background:transparent;padding:0}
-.choice{position:absolute;z-index:5;min-width:220px;background:#000;border:1px solid #3a3a3c;border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:6px}
-.choice[hidden]{display:none}
-.choice p{margin:0 2px 4px;font-size:14px}
-.choice button{border:1px solid #2c2c2e;border-radius:12px;background:#141416;padding:10px 12px;text-align:left}
+.hot{position:absolute;z-index:2;background:transparent;padding:0;cursor:pointer;border-radius:10px}
 .search input{flex:1;min-width:0;border:0;outline:none;background:transparent;font-size:16px}
 .search input::placeholder{color:rgba(255,255,255,.5)}
-.stamp{position:absolute;left:14px;bottom:76px;z-index:3;font-size:12px;color:rgba(255,255,255,.72);background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:6px 10px;pointer-events:none}
 .gold{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:4;border-radius:999px;padding:15px 36px;font-size:17px;font-weight:600;letter-spacing:.01em;color:#241b0d;background:linear-gradient(180deg,#f6e7bf,#e4c27a 46%,#b8893e);box-shadow:0 8px 22px rgba(0,0,0,.35)}
-.car{position:absolute;z-index:3;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #000;transform:translate(-50%,-50%);padding:0;cursor:pointer}
-.car.on{width:18px;height:18px;box-shadow:0 0 0 2px #fff}
 .zones{padding:22px 0 28px}
 .zones h2{margin:0 0 14px;text-align:center;font-size:15px;font-weight:400;color:#8e8e93}
 .carousel{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 16px 8px;scrollbar-width:none}
@@ -52,6 +45,7 @@ button{cursor:pointer;background:none;border:0}
 .fiche dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px}
 .fiche dt{color:#8e8e93}
 .fiche dd{margin:0}
+.site{margin:16px 4px 8px;font-size:13px;font-weight:500;letter-spacing:.03em;color:#d1d1d6}
 .list{overflow:auto;padding:8px 16px 24px}
 .row{width:100%;text-align:left;display:grid;grid-template-columns:12px 1fr auto;gap:10px;align-items:center;padding:14px;margin:0 0 10px;border-radius:16px;border:1px solid #2c2c2e;background:#141416}
 .row.on{border-color:#8e8e93}
@@ -63,11 +57,9 @@ button{cursor:pointer;background:none;border:0}
 .empty{color:#8e8e93}
 :focus-visible{outline:2px solid #fff;outline-offset:2px}
 @media(max-width:700px){
-  .stamp{position:relative;left:auto;bottom:auto;display:table;margin:10px 14px 0}
   .gold{position:relative;left:auto;bottom:auto;transform:none;display:block;margin:12px auto 4px}
 }
 @media(min-width:900px){
-  .stamp{bottom:18px}
   .gold{bottom:22px}
   .zcard{flex-basis:300px}
   .sheet{left:auto;width:420px;border-left:1px solid #2c2c2e}
@@ -91,15 +83,7 @@ button{cursor:pointer;background:none;border:0}
     <div class="mapframe" id="mapframe">
       <img id="basemap" src="carte-alsace.png" alt="Carte de l'Alsace">
       <div id="hots"></div>
-      <div id="cars"></div>
-      <div id="choice" class="choice" hidden>
-        <p>Strasbourg</p>
-        <button type="button" data-id="sxb-sales">Store Sales</button>
-        <button type="button" data-id="sxb-essai">Essai libre-service</button>
-        <button type="button" id="choice-both">Les deux listes</button>
-      </div>
     </div>
-    <div class="stamp" id="stamp">Mis à jour il y a 0 s</div>
     <button type="button" class="gold" id="all">Voir la flotte</button>
   </div>
 </section>
@@ -184,15 +168,10 @@ const FLEET = [
 const STATUS = { disponible:"Disponible", "en essai":"En essai", "en charge":"En charge", indisponible:"Indisponible" };
 const $=id=>document.getElementById(id);
 const centerById=Object.fromEntries(CENTERS.map(c=>[c.id,c]));
-FLEET.forEach((v,i)=>{ v.phase=i*0.7; });
-let scope=null, selected=null, query="", lastPulse=Date.now();
-const view={x:0,y:0,w:1000,h:720};
-let target={...view};
-setInterval(()=>{ lastPulse=Date.now(); }, 4000);
+let scope=null, selected=null, query="";
 
 function norm(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()}
 function esc(s){return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}
-function place(v,t){return {x:v.x+Math.sin(t/1400+v.phase)*0.55, y:v.y+Math.cos(t/1700+v.phase)*0.4}}
 function hit(v){
   const q=norm(query).trim();
   if(!q) return true;
@@ -206,14 +185,14 @@ function inScope(v){
   return v.center===scope;
 }
 function visible(v){return hit(v)&&inScope(v)}
-function stampText(){return "Mis à jour il y a "+Math.max(0,Math.round((Date.now()-lastPulse)/1000))+" s"}
 
+/* Zone invisible sur le cercle ET le nom imprimés. left/top/width/height en % de l'image. */
 const HOTS=[
-  {city:"Sarrebourg", x:10.3, y:12.6},
-  {city:"Saverne", x:37.4, y:9.9},
-  {city:"Roppenheim", x:80.4, y:9.4},
-  {city:"Strasbourg", x:65.0, y:34.7},
-  {city:"Sélestat", x:50.9, y:73.3}
+  {city:"Sarrebourg", left:8.1, top:9.2, width:15.8, height:7.2},
+  {city:"Saverne", left:35.2, top:6.6, width:11.5, height:7.2},
+  {city:"Roppenheim", left:78.2, top:5.8, width:14.7, height:7.2},
+  {city:"Strasbourg", left:62.8, top:31.1, width:14.7, height:7.2},
+  {city:"Sélestat", left:48.8, top:69.6, width:11.5, height:7.3}
 ];
 function drawCities(){
   const g=$("hots");
@@ -222,35 +201,14 @@ function drawCities(){
     const b=document.createElement("button");
     b.type="button";
     b.className="hot";
-    b.style.left=h.x+"%";
-    b.style.top=h.y+"%";
+    b.style.left=h.left+"%";
+    b.style.top=h.top+"%";
+    b.style.width=h.width+"%";
+    b.style.height=h.height+"%";
     b.setAttribute("aria-label",h.city);
     b.addEventListener("click",()=>openCity(h.city));
     g.append(b);
   }
-}
-function paintCar(dot,v,t){
-  const p=place(v,t);
-  dot.style.left=p.x+"%";
-  dot.style.top=p.y+"%";
-  dot.style.background=v.swatch;
-  dot.classList.toggle("on", selected===v.id);
-  dot.style.opacity=hit(v)?"1":".25";
-}
-function drawCars(t){
-  const g=$("cars");
-  if(g.childElementCount!==FLEET.length){
-    g.innerHTML="";
-    for(const v of FLEET){
-      const dot=document.createElement("button");
-      dot.type="button";
-      dot.className="car";
-      dot.setAttribute("aria-label",v.model+" "+v.plate);
-      dot.addEventListener("click",e=>{ e.stopPropagation(); openVehicle(v.id); });
-      g.append(dot);
-    }
-  }
-  [...g.children].forEach((dot,i)=>paintCar(dot,FLEET[i],t));
 }
 
 function mini(c){
@@ -295,13 +253,25 @@ function drawCarousel(){
   mark();
 }
 
+function rowHtml(v){
+  return `<button type="button" class="row${v.id===selected?" on":""}" data-id="${v.id}">
+    <span class="dot" style="background:${v.swatch}"></span>
+    <span><b>${esc(v.model)} · ${esc(v.color)}</b>${v.winter?"<span class='flake' title='Pack hiver'>❄</span>":""}
+      <span class="meta">${esc(v.plate)} · ${v.battery} % · ${esc(centerById[v.center].role)}</span></span>
+    <span class="pill">${esc(STATUS[v.status])}</span>
+  </button>`;
+}
 function renderList(){
   const rows=FLEET.filter(visible);
   let title="Toute la flotte";
-  if(scope&&scope.startsWith("city:")) title=scope.slice(5);
+  let detail="";
+  if(scope==="city:Strasbourg"){
+    title="Strasbourg";
+    detail="Store Sales et essai libre-service";
+  }else if(scope&&scope.startsWith("city:")) title=scope.slice(5);
   else if(scope){ const c=centerById[scope]; title=c.city+" · "+c.role; }
   $("ptitle").textContent=title;
-  $("pcount").textContent=rows.length+" véhicule"+(rows.length>1?"s":"")+" · "+stampText();
+  $("pcount").textContent=rows.length+" véhicule"+(rows.length>1?"s":"")+(detail?" · "+detail:"");
   const fiche=$("fiche");
   const v=FLEET.find(x=>x.id===selected);
   if(v&&visible(v)){
@@ -316,60 +286,45 @@ function renderList(){
         <dt>Statut</dt><dd><span class="pill">${esc(STATUS[v.status])}</span></dd>
         <dt>Batterie</dt><dd>${v.battery} %</dd>
         <dt>Pack hiver</dt><dd>${v.winter?"Oui":"Non"}</dd>
-        <dt>Position</dt><dd>Sur la carte, secteur ${esc(c.city)}</dd>
       </dl>`;
   }else{ fiche.hidden=true; fiche.innerHTML=""; }
   const list=$("list");
   if(!rows.length){ list.innerHTML='<p class="empty">Aucun véhicule ne correspond.</p>'; return; }
-  list.innerHTML=rows.map(v=>`<button type="button" class="row${v.id===selected?" on":""}" data-id="${v.id}">
-    <span class="dot" style="background:${v.swatch}"></span>
-    <span><b>${esc(v.model)} · ${esc(v.color)}</b>${v.winter?"<span class='flake' title='Pack hiver'>❄</span>":""}
-      <span class="meta">${esc(v.plate)} · ${v.battery} % · ${esc(centerById[v.center].role)}</span></span>
-    <span class="pill">${esc(STATUS[v.status])}</span>
-  </button>`).join("");
+  if(scope==="city:Strasbourg"){
+    list.innerHTML=["sxb-sales","sxb-essai"].map(id=>{
+      const part=rows.filter(v=>v.center===id);
+      const head=`<h3 class="site">${esc(centerById[id].role)}</h3>`;
+      return head+(part.length?part.map(rowHtml).join(""):'<p class="empty">Aucun véhicule.</p>');
+    }).join("");
+  }else list.innerHTML=rows.map(rowHtml).join("");
   list.querySelectorAll(".row").forEach(btn=>btn.addEventListener("click",()=>openVehicle(btn.dataset.id)));
 }
 function openSheet(){ $("sheet").hidden=false; renderList(); }
 function openCity(city){
-  if(city==="Strasbourg"){
-    const box=$("choice");
-    box.hidden=false;
-    box.style.left="65%";
-    box.style.top="40%";
-    return;
-  }
-  const c=CENTERS.find(x=>x.city===city);
-  openCenter(c.id);
+  selected=null;
+  query="";
+  $("q").value="";
+  if(city==="Strasbourg") scope="city:Strasbourg";
+  else scope=CENTERS.find(x=>x.city===city).id;
+  openSheet();
 }
-function openCenter(id){ $("choice").hidden=true; scope=id; selected=null; openSheet(); drawCars(performance.now()); }
-function openBoth(){ $("choice").hidden=true; scope="city:Strasbourg"; selected=null; openSheet(); drawCars(performance.now()); }
-function openAll(){ $("choice").hidden=true; scope=null; selected=null; query=""; $("q").value=""; openSheet(); drawCars(performance.now()); }
+function openCenter(id){ scope=id; selected=null; openSheet(); }
+function openAll(){ scope=null; selected=null; query=""; $("q").value=""; openSheet(); }
 function openVehicle(id){
   const v=FLEET.find(x=>x.id===id); if(!v) return;
-  selected=id; scope=v.center;
-  $("choice").hidden=true;
-  openSheet(); drawCars(performance.now());
-}
-function tick(t){
-  $("stamp").textContent=stampText();
-  if(!$("sheet").hidden) $("pcount").textContent=FLEET.filter(visible).length+" véhicule"+(FLEET.filter(visible).length>1?"s":"")+" · "+stampText();
-  drawCars(t);
-  requestAnimationFrame(tick);
+  selected=id;
+  openSheet();
 }
 $("q").addEventListener("input",e=>{
   query=e.target.value;
   if(query.trim()){ scope=null; selected=null; openSheet(); }
-  else renderList();
-  drawCars(performance.now());
+  else if(!$("sheet").hidden) renderList();
 });
 $("all").addEventListener("click",openAll);
-$("close").addEventListener("click",()=>{ $("sheet").hidden=true; $("choice").hidden=true; selected=null; scope=null; drawCars(performance.now()); });
-$("choice").querySelectorAll("[data-id]").forEach(b=>b.addEventListener("click",()=>openCenter(b.dataset.id)));
-$("choice-both").addEventListener("click",openBoth);
+$("close").addEventListener("click",()=>{ $("sheet").hidden=true; selected=null; scope=null; });
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") $("close").click(); });
 drawCities();
 drawCarousel();
-requestAnimationFrame(tick);
 </script>
 </body>
 </html>
