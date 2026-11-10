@@ -32,7 +32,7 @@ button{cursor:pointer;background:none;border:0}
 .city{cursor:pointer}
 .city .name{fill:#fff;font-family:Inter,"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:30px;font-weight:500}
 .city .role{fill:#c7c7cc;font-family:Inter,"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:.12em}
-.car{position:absolute;width:14px;height:14px;border-radius:50%;border:2px solid #111;box-shadow:0 0 0 1px #fff;transform:translate(-50%,-50%);padding:0;cursor:pointer}
+.car{position:absolute;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #000;transform:translate(-50%,-50%);padding:0;cursor:pointer}
 .car.on{width:18px;height:18px;box-shadow:0 0 0 2px #fff}
 .zones{padding:22px 0 28px}
 .zones h2{margin:0 0 14px;text-align:center;font-size:15px;font-weight:400;color:#8e8e93}
@@ -86,7 +86,7 @@ button{cursor:pointer;background:none;border:0}
     <input id="q" type="search" placeholder="Ville, plaque, VIN, pack hiver" autocomplete="off" aria-label="Rechercher un véhicule">
   </label>
   <div class="mapframe" id="mapframe">
-    <img id="basemap" src="carte-alsace.webp" alt="Carte de l'Alsace : relief, routes et Rhin">
+    <img id="basemap" src="carte-alsace.png" alt="Carte de l'Alsace : relief, routes et Rhin">
     <div id="hots"></div>
     <div id="cars"></div>
     <div id="choice" class="choice" hidden>
@@ -161,9 +161,9 @@ const FLEET = [
   { id:"v16", model:"Model 3", color:"Rouge", swatch:"#9a6a6a", vin:"LRW30TEST0000016", plate:"FT-340-AL", center:"rop", status:"en charge", battery:27, winter:false, x:84.3, y:11.7 },
   { id:"v17", model:"Model Y", color:"Noir", swatch:"#3a3d44", vin:"LRWY0TEST0000017", plate:"FT-353-ST", center:"rop", status:"disponible", battery:74, winter:false, x:83.1, y:14.3 },
   { id:"v18", model:"Model 3", color:"Blanc", swatch:"#f7f4ee", vin:"LRW30TEST0000018", plate:"FT-401-AL", center:"sel", status:"disponible", battery:83, winter:true, x:48.3, y:76.3 },
-  { id:"v19", model:"Model Y", color:"Bleu", swatch:"#8aa4b5", vin:"LRWY0TEST0000019", plate:"FT-414-SX", center:"sel", status:"en essai", battery:66, winter:true, x:49.7, y:77.1 },
+  { id:"v19", model:"Model Y", color:"Bleu", swatch:"#8aa4b5", vin:"LRWY0TEST0000019", plate:"FT-414-SX", center:"sel", status:"en essai", battery:66, winter:true, x:48.2, y:78.4 },
   { id:"v20", model:"Model 3", color:"Gris", swatch:"#b0b3b8", vin:"LRW30TEST0000020", plate:"FT-427-ST", center:"sel", status:"disponible", battery:49, winter:false, x:47.3, y:76.9 },
-  { id:"v21", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000021", plate:"FT-440-AL", center:"sel", status:"disponible", battery:92, winter:true, x:50.5, y:76.1 },
+  { id:"v21", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000021", plate:"FT-440-AL", center:"sel", status:"disponible", battery:92, winter:true, x:47.6, y:79.2 },
   { id:"v22", model:"Model 3", color:"Noir", swatch:"#3a3d44", vin:"LRW30TEST0000022", plate:"FT-453-SX", center:"sel", status:"indisponible", battery:15, winter:false, x:48.9, y:77.9 },
   { id:"v23", model:"Model Y", color:"Rouge", swatch:"#9a6a6a", vin:"LRWY0TEST0000023", plate:"FT-466-ST", center:"sel", status:"en charge", battery:71, winter:true, x:47.7, y:75.5 },
   { id:"v24", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000024", plate:"FT-501-AL", center:"sav", status:"disponible", battery:79, winter:true, x:34.9, y:12.8 },
