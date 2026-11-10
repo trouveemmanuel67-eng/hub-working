@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flotte Strasbourg Sales</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#07080c;color:#f4f1ea;font-family:"Segoe UI",Futura,"Century Gothic",system-ui,sans-serif}
+body{display:flex;flex-direction:column;overflow:hidden}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+.demo{margin:0;padding:6px 12px;text-align:center;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#cbb892;background:rgba(201,169,110,.08);border-bottom:1px solid rgba(201,169,110,.22)}
+.head{display:flex;align-items:center;gap:18px;padding:10px 16px 8px}
+.brand{flex:0 0 auto;min-width:0}
+.word{margin:0;font-family:"Segoe Script","Brush Script MT","Apple Chancery",Z003,"URW Chancery L",cursive;font-size:52px;font-weight:500;line-height:.85;color:#f7f4ee;letter-spacing:.01em}
+.sub{margin:2px 0 0 6px;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#d7c7a4}
+.search{flex:1;display:flex;align-items:center;gap:10px;min-width:0;background:rgba(16,18,24,.55);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:10px 16px;backdrop-filter:blur(10px)}
+.search input{flex:1;min-width:0;border:0;outline:none;background:transparent;font-size:16px}
+.search input::placeholder{color:rgba(244,241,234,.55)}
+.stage{flex:1;display:flex;min-height:0;position:relative}
+.mapwrap{flex:1;position:relative;min-width:0}
+#map{width:100%;height:100%;display:block;background:#07090d}
+.city{cursor:pointer}
+.city text{fill:#fff;font-family:"Segoe UI",Futura,system-ui,sans-serif;font-weight:650}
+.city .name{font-size:34px}
+.city .role{font-size:13px;letter-spacing:.14em;fill:#e4d0a4}
+.car{cursor:pointer}
+.gold{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:4;border:0;border-radius:999px;padding:16px 42px;font-size:18px;font-weight:700;letter-spacing:.04em;color:#241b0d;background:linear-gradient(180deg,#f6e7bf 0%,#e4c27a 42%,#b8893e 100%);box-shadow:0 10px 28px rgba(201,161,80,.38),inset 0 1px 0 rgba(255,255,255,.55)}
+.gold:focus-visible,.city:focus-visible,.row:focus-visible,.x:focus-visible{outline:2px solid #f3e2b0;outline-offset:3px}
+.panel{width:372px;flex:none;margin:12px 12px 12px 0;background:rgba(10,11,14,.92);border:1px solid rgba(201,169,110,.45);border-radius:18px;display:flex;flex-direction:column;min-height:0;box-shadow:0 16px 40px rgba(0,0,0,.45)}
+.panel[hidden]{display:none}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:14px 14px 8px}
+.ph h2{margin:0;font-size:20px;font-weight:600}
+.ph p{margin:4px 0 0;color:#d2c8bc;font-size:13px}
+.x{border:1px solid rgba(201,169,110,.4);background:transparent;border-radius:999px;width:32px;height:32px;color:#f4f1ea}
+.fiche{margin:0 12px 8px;padding:12px;border-radius:14px;background:#14120f;border:1px solid rgba(201,169,110,.35)}
+.fiche h3{margin:0 0 6px;font-size:18px}
+.fiche dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:13px}
+.fiche dt{color:#d2c8bc}
+.fiche dd{margin:0}
+.list{overflow:auto;padding:4px 10px 12px;min-height:0}
+.row{width:100%;text-align:left;display:grid;grid-template-columns:14px 1fr auto;gap:8px;align-items:center;padding:10px;margin:0 0 6px;border-radius:12px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03)}
+.row.on{border-color:#c9a96e;background:rgba(201,169,110,.1)}
+.dot{width:12px;height:12px;border-radius:50%;box-shadow:0 0 0 2px rgba(0,0,0,.35)}
+.row b{font-weight:600}
+.meta{display:block;color:#d2c8bc;font-size:12px;margin-top:2px}
+.flake{color:#d7ecff;margin-left:4px}
+.pill{font-size:11px;letter-spacing:.04em;border-radius:999px;padding:4px 8px;white-space:nowrap}
+.pill.disponible{background:#143024;color:#b7ebc8}
+.pill.essai{background:#3a3018;color:#f0ddb0}
+.pill.charge{background:#142433;color:#b9d7ff}
+.pill.off{background:#2a2422;color:#c8bdb4}
+.empty{color:#d2c8bc;padding:12px}
+.stamp{position:absolute;left:14px;bottom:18px;z-index:3;font-size:12px;color:rgba(244,241,234,.72);background:rgba(0,0,0,.35);border-radius:999px;padding:6px 10px}
+@media(max-width:800px){
+  .head{flex-direction:column;align-items:stretch;gap:8px;padding:8px 12px}
+  .word{font-size:42px}
+  .gold{width:calc(100% - 28px);bottom:12px;padding:14px 16px}
+  .stage{position:relative}
+  .panel{position:absolute;left:8px;right:8px;bottom:74px;width:auto;max-height:52%;margin:0;z-index:6}
+  .stamp{bottom:74px}
+  .city .name{font-size:28px}
+}
+</style>
+</head>
+<body>
+<p class="demo">Données fictives de démonstration</p>
+<header class="head">
+  <div class="brand">
+    <h1 class="word">Fleet</h1>
+    <p class="sub">Strasbourg Sales</p>
+  </div>
+  <label class="search"><span aria-hidden="true">⌕</span>
+    <input id="q" type="search" placeholder="Ville, plaque, VIN, modèle ou pack hiver" autocomplete="off" aria-label="Rechercher un véhicule">
+  </label>
+</header>
+<div class="stage">
+  <div class="mapwrap">
+    <svg id="map" viewBox="0 0 1000 720" role="img" aria-label="Carte stylisée de l'Alsace et de la flotte">
+      <defs>
+        <radialGradient id="sky" cx="50%" cy="45%" r="70%">
+          <stop offset="0" stop-color="#1a221c"/>
+          <stop offset="55%" stop-color="#0c100f"/>
+          <stop offset="100%" stop-color="#05060a"/>
+        </radialGradient>
+        <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="2.4" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="halo" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="1" stdDeviation="1.6" flood-color="#000" flood-opacity=".85"/>
+        </filter>
+      </defs>
+      <rect width="1000" height="720" fill="url(#sky)"/>
+      <ellipse cx="210" cy="300" rx="250" ry="300" fill="#121814"/>
+      <ellipse cx="160" cy="180" rx="120" ry="90" fill="#1a221c"/>
+      <ellipse cx="250" cy="460" rx="140" ry="110" fill="#101612"/>
+      <ellipse cx="620" cy="340" rx="220" ry="180" fill="#0c1214"/>
+      <ellipse cx="860" cy="220" rx="150" ry="200" fill="#10141a"/>
+      <path d="M900 20 C 860 140, 930 260, 880 400 C 840 520, 910 600, 870 720" fill="none" stroke="#0c3044" stroke-width="34" opacity=".9"/>
+      <g fill="none" stroke-linecap="round" filter="url(#glow)">
+        <path d="M70 360 C 120 330, 155 320, 210 270 C 270 210, 340 145, 410 175 C 490 230, 540 310, 590 400" stroke="#67b7ff" stroke-width="7" opacity=".28"/>
+        <path d="M70 360 C 120 330, 155 320, 210 270 C 270 210, 340 145, 410 175 C 490 230, 540 310, 590 400" stroke="#b7e1ff" stroke-width="2.2"/>
+        <path d="M155 320 C 220 250, 280 180, 340 145" stroke="#8ecfff" stroke-width="2"/>
+        <path d="M760 30 C 730 120, 760 200, 710 305 C 650 390, 560 470, 470 575 C 430 640, 480 700, 520 720" stroke="#67b7ff" stroke-width="7" opacity=".28"/>
+        <path d="M760 30 C 730 120, 760 200, 710 305 C 650 390, 560 470, 470 575 C 430 640, 480 700, 520 720" stroke="#b7e1ff" stroke-width="2.2"/>
+        <path d="M860 130 C 800 160, 760 210, 710 305" stroke="#9fd4ff" stroke-width="2"/>
+        <path d="M520 360 C 600 340, 680 360, 760 330" stroke="#7ec4ff" stroke-width="1.6" opacity=".8"/>
+        <path d="M430 560 C 500 540, 560 500, 590 400" stroke="#7ec4ff" stroke-width="1.5" opacity=".75"/>
+      </g>
+      <g id="cars"></g>
+      <g id="cities"></g>
+    </svg>
+    <div class="stamp" id="stamp">Mis à jour il y a 0 s</div>
+    <button type="button" class="gold" id="all">Voir la flotte</button>
+  </div>
+  <aside class="panel" id="panel" hidden>
+    <div class="ph">
+      <div>
+        <h2 id="ptitle">Flotte</h2>
+        <p id="pcount"></p>
+      </div>
+      <button type="button" class="x" id="close" aria-label="Fermer">✕</button>
+    </div>
+    <div id="fiche"></div>
+    <div class="list" id="list"></div>
+  </aside>
+</div>
+<script>
+/* Centres. x et y : position sur la carte (viewBox 0 0 1000 720), nord en haut.
+   SIDEKICK peut ajuster les coordonnées sans toucher au dessin des routes. */
+const CENTERS = [
+  { id:"sxb-sales", city:"Strasbourg", role:"Store Sales", kind:"store", x:590, y:400 },
+  { id:"sxb-essai", city:"Strasbourg", role:"Essai libre-service", kind:"essai", x:710, y:305 },
+  { id:"rop", city:"Roppenheim", role:"Essai libre-service", kind:"essai", x:860, y:130 },
+  { id:"sel", city:"Sélestat", role:"Essai libre-service", kind:"essai", x:470, y:575 },
+  { id:"sav", city:"Saverne", role:"Essai libre-service", kind:"essai", x:340, y:145 },
+  { id:"sar", city:"Sarrebourg", role:"Essai libre-service", kind:"essai", x:155, y:320 }
+];
+
+/* FLOTTE FICTIVE DE DÉMONSTRATION.
+   SIDEKICK : remplace uniquement ce tableau par les véhicules réels.
+   Champs :
+   - id       identifiant interne
+   - model    « Model 3 » ou « Model Y »
+   - color    nom de couleur affiché
+   - swatch   couleur du point sur la carte
+   - vin      VIN factice (contient TEST, à ne pas confondre avec un VIN réel)
+   - plate    plaque factice au format AA-123-AA
+   - center   id d'un centre de CENTERS
+   - status   disponible | en essai | en charge | indisponible
+   - battery  pourcentage de batterie
+   - winter   true si le véhicule a le pack hiver
+   - x, y     position de départ sur la carte */
+const FLEET = [
+  { id:"v01", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000001", plate:"FT-101-AL", center:"sxb-sales", status:"disponible", battery:86, winter:true, x:572, y:384 },
+  { id:"v02", model:"Model 3", color:"Noir", swatch:"#2c2e33", vin:"LRW30TEST0000002", plate:"FT-118-SX", center:"sxb-sales", status:"en essai", battery:64, winter:false, x:612, y:418 },
+  { id:"v03", model:"Model Y", color:"Bleu", swatch:"#3d7ea6", vin:"LRWY0TEST0000003", plate:"FT-132-AL", center:"sxb-sales", status:"disponible", battery:91, winter:true, x:556, y:412 },
+  { id:"v04", model:"Model 3", color:"Rouge", swatch:"#9a3b3b", vin:"LRW30TEST0000004", plate:"FT-145-ST", center:"sxb-sales", status:"en charge", battery:41, winter:false, x:628, y:386 },
+  { id:"v05", model:"Model Y", color:"Gris", swatch:"#8d8f93", vin:"LRWY0TEST0000005", plate:"FT-160-SX", center:"sxb-sales", status:"disponible", battery:73, winter:true, x:598, y:436 },
+  { id:"v06", model:"Model 3", color:"Blanc", swatch:"#f7f4ee", vin:"LRW30TEST0000006", plate:"FT-173-AL", center:"sxb-sales", status:"indisponible", battery:19, winter:false, x:548, y:368 },
+  { id:"v07", model:"Model Y", color:"Noir", swatch:"#24262b", vin:"LRWY0TEST0000007", plate:"FT-186-ST", center:"sxb-sales", status:"en essai", battery:88, winter:true, x:640, y:428 },
+  { id:"v08", model:"Model 3", color:"Gris", swatch:"#9aa0a6", vin:"LRW30TEST0000008", plate:"FT-201-AL", center:"sxb-essai", status:"disponible", battery:77, winter:false, x:688, y:286 },
+  { id:"v09", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000009", plate:"FT-214-SX", center:"sxb-essai", status:"disponible", battery:95, winter:true, x:734, y:322 },
+  { id:"v10", model:"Model 3", color:"Bleu", swatch:"#3d7ea6", vin:"LRW30TEST0000010", plate:"FT-227-ST", center:"sxb-essai", status:"en essai", battery:52, winter:false, x:676, y:330 },
+  { id:"v11", model:"Model Y", color:"Rouge", swatch:"#a34747", vin:"LRWY0TEST0000011", plate:"FT-240-AL", center:"sxb-essai", status:"en charge", battery:33, winter:true, x:748, y:292 },
+  { id:"v12", model:"Model 3", color:"Noir", swatch:"#2c2e33", vin:"LRW30TEST0000012", plate:"FT-253-SX", center:"sxb-essai", status:"indisponible", battery:68, winter:false, x:712, y:258 },
+  { id:"v13", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000013", plate:"FT-301-AL", center:"rop", status:"disponible", battery:81, winter:true, x:838, y:112 },
+  { id:"v14", model:"Model 3", color:"Bleu", swatch:"#3d7ea6", vin:"LRW30TEST0000014", plate:"FT-314-ST", center:"rop", status:"en essai", battery:58, winter:false, x:888, y:148 },
+  { id:"v15", model:"Model Y", color:"Gris", swatch:"#8d8f93", vin:"LRWY0TEST0000015", plate:"FT-327-SX", center:"rop", status:"disponible", battery:90, winter:true, x:842, y:158 },
+  { id:"v16", model:"Model 3", color:"Rouge", swatch:"#9a3b3b", vin:"LRW30TEST0000016", plate:"FT-340-AL", center:"rop", status:"en charge", battery:27, winter:false, x:812, y:146 },
+  { id:"v17", model:"Model Y", color:"Noir", swatch:"#24262b", vin:"LRWY0TEST0000017", plate:"FT-353-ST", center:"rop", status:"disponible", battery:74, winter:false, x:878, y:104 },
+  { id:"v18", model:"Model 3", color:"Blanc", swatch:"#f7f4ee", vin:"LRW30TEST0000018", plate:"FT-401-AL", center:"sel", status:"disponible", battery:83, winter:true, x:446, y:556 },
+  { id:"v19", model:"Model Y", color:"Bleu", swatch:"#3d7ea6", vin:"LRWY0TEST0000019", plate:"FT-414-SX", center:"sel", status:"en essai", battery:66, winter:true, x:498, y:588 },
+  { id:"v20", model:"Model 3", color:"Gris", swatch:"#9aa0a6", vin:"LRW30TEST0000020", plate:"FT-427-ST", center:"sel", status:"disponible", battery:49, winter:false, x:428, y:598 },
+  { id:"v21", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000021", plate:"FT-440-AL", center:"sel", status:"disponible", battery:92, winter:true, x:508, y:552 },
+  { id:"v22", model:"Model 3", color:"Noir", swatch:"#2c2e33", vin:"LRW30TEST0000022", plate:"FT-453-SX", center:"sel", status:"indisponible", battery:15, winter:false, x:456, y:612 },
+  { id:"v23", model:"Model Y", color:"Rouge", swatch:"#a34747", vin:"LRWY0TEST0000023", plate:"FT-466-ST", center:"sel", status:"en charge", battery:71, winter:true, x:412, y:568 },
+  { id:"v24", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000024", plate:"FT-501-AL", center:"sav", status:"disponible", battery:79, winter:true, x:318, y:128 },
+  { id:"v25", model:"Model 3", color:"Bleu", swatch:"#3d7ea6", vin:"LRW30TEST0000025", plate:"FT-514-SX", center:"sav", status:"en essai", battery:55, winter:false, x:372, y:168 },
+  { id:"v26", model:"Model Y", color:"Gris", swatch:"#8d8f93", vin:"LRWY0TEST0000026", plate:"FT-527-ST", center:"sav", status:"disponible", battery:87, winter:true, x:308, y:176 },
+  { id:"v27", model:"Model 3", color:"Rouge", swatch:"#9a3b3b", vin:"LRW30TEST0000027", plate:"FT-540-AL", center:"sav", status:"en charge", battery:38, winter:false, x:386, y:126 },
+  { id:"v28", model:"Model 3", color:"Blanc", swatch:"#f7f4ee", vin:"LRW30TEST0000028", plate:"FT-601-AL", center:"sar", status:"disponible", battery:80, winter:false, x:134, y:302 },
+  { id:"v29", model:"Model Y", color:"Noir", swatch:"#24262b", vin:"LRWY0TEST0000029", plate:"FT-614-SX", center:"sar", status:"en essai", battery:63, winter:true, x:186, y:338 },
+  { id:"v30", model:"Model 3", color:"Gris", swatch:"#9aa0a6", vin:"LRW30TEST0000030", plate:"FT-627-ST", center:"sar", status:"en charge", battery:44, winter:false, x:122, y:348 },
+  { id:"v31", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000031", plate:"FT-640-AL", center:"sar", status:"disponible", battery:96, winter:true, x:188, y:296 },
+  { id:"v32", model:"Model 3", color:"Bleu", swatch:"#3d7ea6", vin:"LRW30TEST0000032", plate:"FT-653-SX", center:"sar", status:"indisponible", battery:22, winter:false, x:158, y:362 }
+];
+
+const STATUS = { disponible:"Disponible", "en essai":"En essai", "en charge":"En charge", indisponible:"Indisponible" };
+const PILL = { disponible:"disponible", "en essai":"essai", "en charge":"charge", indisponible:"off" };
+const $=id=>document.getElementById(id);
+const centerById=Object.fromEntries(CENTERS.map(c=>[c.id,c]));
+FLEET.forEach((v,i)=>{ v.phase=i*0.7; });
+
+let scope=null;
+let selected=null;
+let query="";
+let lastPulse=Date.now();
+const view={x:0,y:0,w:1000,h:720};
+let target={...view};
+setInterval(()=>{ lastPulse=Date.now(); }, 4000);
+
+function norm(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()}
+function place(v,t){
+  return { x:v.x+Math.sin(t/1400+v.phase)*7, y:v.y+Math.cos(t/1700+v.phase)*5 };
+}
+function hit(v){
+  const q=norm(query).trim();
+  if(!q) return true;
+  const c=centerById[v.center];
+  const blob=norm([v.model,v.color,v.vin,v.plate,c.city,c.role,v.status,v.winter?"pack hiver":""].join(" "));
+  return blob.includes(q);
+}
+function inScope(v){ return !scope || v.center===scope; }
+function visible(v){ return hit(v) && inScope(v); }
+
+function drawCities(){
+  const g=$("cities");
+  g.innerHTML="";
+  for(const c of CENTERS){
+    const node=document.createElementNS("http://www.w3.org/2000/svg","g");
+    node.setAttribute("class","city");
+    node.setAttribute("tabindex","0");
+    node.setAttribute("role","button");
+    node.setAttribute("aria-label",c.city+" , "+c.role);
+    const place={
+      "sxb-sales":{dx:-18,dy:-10,anchor:"end"},
+      "sxb-essai":{dx:18,dy:-10,anchor:"start"},
+      "rop":{dx:-18,dy:-10,anchor:"end"},
+      "sel":{dx:0,dy:34,anchor:"middle"},
+      "sav":{dx:0,dy:-42,anchor:"middle"},
+      "sar":{dx:0,dy:36,anchor:"middle"}
+    }[c.id];
+    const anchor=place.anchor;
+    const tx=c.x+place.dx;
+    const nameY=c.y+place.dy;
+    const name=document.createElementNS("http://www.w3.org/2000/svg","text");
+    name.setAttribute("class","name");
+    name.setAttribute("x",tx); name.setAttribute("y",nameY);
+    name.setAttribute("text-anchor",anchor);
+    name.setAttribute("filter","url(#halo)");
+    name.textContent=c.city;
+    const role=document.createElementNS("http://www.w3.org/2000/svg","text");
+    role.setAttribute("class","role");
+    role.setAttribute("x",tx); role.setAttribute("y",nameY+20);
+    role.setAttribute("text-anchor",anchor);
+    role.setAttribute("filter","url(#halo)");
+    role.textContent=c.role.toUpperCase();
+    const pin=document.createElementNS("http://www.w3.org/2000/svg","circle");
+    pin.setAttribute("cx",c.x); pin.setAttribute("cy",c.y); pin.setAttribute("r","5");
+    pin.setAttribute("fill",c.kind==="store"?"#e4c27a":"#f4f1ea");
+    node.append(name,role,pin);
+    node.addEventListener("click",()=>openCenter(c.id));
+    node.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openCenter(c.id); }});
+    g.append(node);
+  }
+}
+
+function paintCar(dot,v,t){
+  const p=place(v,t);
+  dot.setAttribute("cx",p.x); dot.setAttribute("cy",p.y);
+  dot.setAttribute("r",selected===v.id?"8":"6");
+  const ring=selected===v.id?"#f3e2b0":(v.status==="disponible"?"#7dcea0":v.status==="en essai"?"#e4d0a4":v.status==="en charge"?"#7eb6ff":"#8a8078");
+  dot.setAttribute("stroke",ring);
+  dot.setAttribute("stroke-width",selected===v.id?"3":"2");
+  dot.setAttribute("opacity",hit(v)?"1":".18");
+}
+function drawCars(t){
+  const g=$("cars");
+  if(g.childElementCount!==FLEET.length){
+    g.innerHTML="";
+    for(const v of FLEET){
+      const dot=document.createElementNS("http://www.w3.org/2000/svg","circle");
+      dot.setAttribute("class","car");
+      dot.setAttribute("fill",v.swatch);
+      dot.setAttribute("tabindex","0");
+      dot.setAttribute("role","button");
+      dot.setAttribute("aria-label",v.model+" "+v.plate);
+      dot.dataset.id=v.id;
+      const go=()=>openVehicle(v.id);
+      dot.addEventListener("click",e=>{ e.stopPropagation(); go(); });
+      dot.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); go(); }});
+      g.append(dot);
+    }
+  }
+  [...g.children].forEach((dot,i)=>paintCar(dot,FLEET[i],t));
+}
+
+function renderList(){
+  const rows=FLEET.filter(visible);
+  const title=scope?centerById[scope].city+" · "+centerById[scope].role:"Toute la flotte";
+  $("ptitle").textContent=title;
+  $("pcount").textContent=rows.length+" véhicule"+(rows.length>1?"s":"")+" · "+stampText();
+  const fiche=$("fiche");
+  const v=FLEET.find(x=>x.id===selected);
+  if(v && visible(v)){
+    const c=centerById[v.center];
+    fiche.hidden=false;
+    fiche.className="fiche";
+    fiche.innerHTML=`<h3>${esc(v.model)} ${v.winter?'<span class="flake" title="Pack hiver">❄</span>':""}</h3>
+      <dl>
+        <dt>Couleur</dt><dd>${esc(v.color)}</dd>
+        <dt>Plaque</dt><dd>${esc(v.plate)}</dd>
+        <dt>VIN</dt><dd>${esc(v.vin)}</dd>
+        <dt>Centre</dt><dd>${esc(c.city)} · ${esc(c.role)}</dd>
+        <dt>Statut</dt><dd><span class="pill ${PILL[v.status]}">${esc(STATUS[v.status])}</span></dd>
+        <dt>Batterie</dt><dd>${v.battery} %</dd>
+        <dt>Pack hiver</dt><dd>${v.winter?"Oui":"Non"}</dd>
+      </dl>`;
+  }else{
+    fiche.hidden=true;
+    fiche.innerHTML="";
+  }
+  const list=$("list");
+  if(!rows.length){ list.innerHTML='<p class="empty">Aucun véhicule ne correspond.</p>'; return; }
+  list.innerHTML=rows.map(v=>`<button type="button" class="row${v.id===selected?" on":""}" data-id="${v.id}">
+      <span class="dot" style="background:${v.swatch}"></span>
+      <span><b>${esc(v.model)} · ${esc(v.color)}</b>${v.winter?'<span class="flake" title="Pack hiver">❄</span>':""}
+        <span class="meta">${esc(v.plate)} · ${v.battery} % · ${esc(centerById[v.center].city)}</span></span>
+      <span class="pill ${PILL[v.status]}">${esc(STATUS[v.status])}</span>
+    </button>`).join("");
+  list.querySelectorAll(".row").forEach(btn=>btn.addEventListener("click",()=>openVehicle(btn.dataset.id)));
+}
+function esc(s){return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}
+function stampText(){return "Mis à jour il y a "+Math.max(0,Math.round((Date.now()-lastPulse)/1000))+" s"}
+function openPanel(){ $("panel").hidden=false; renderList(); }
+function openCenter(id){ scope=id; selected=null; resetView(); openPanel(); drawCars(performance.now()); }
+function openAll(){ scope=null; selected=null; query=""; $("q").value=""; resetView(); openPanel(); drawCars(performance.now()); }
+function openVehicle(id){
+  const v=FLEET.find(x=>x.id===id);
+  if(!v) return;
+  selected=id;
+  scope=v.center;
+  const p=place(v,performance.now());
+  target={x:p.x-280,y:p.y-200,w:560,h:400};
+  openPanel();
+  drawCars(performance.now());
+}
+function resetView(){ target={x:0,y:0,w:1000,h:720}; }
+function tick(t){
+  $("stamp").textContent=stampText();
+  if(!$("panel").hidden) $("pcount").textContent=(FLEET.filter(visible).length)+" véhicule"+(FLEET.filter(visible).length>1?"s":"")+" · "+stampText();
+  drawCars(t);
+  view.x+=(target.x-view.x)*.12;
+  view.y+=(target.y-view.y)*.12;
+  view.w+=(target.w-view.w)*.12;
+  view.h+=(target.h-view.h)*.12;
+  $("map").setAttribute("viewBox",`${view.x.toFixed(1)} ${view.y.toFixed(1)} ${view.w.toFixed(1)} ${view.h.toFixed(1)}`);
+  requestAnimationFrame(tick);
+}
+
+$("q").addEventListener("input",e=>{
+  query=e.target.value;
+  if(query.trim()){ scope=null; selected=null; openPanel(); }
+  else renderList();
+  drawCars(performance.now());
+});
+$("all").addEventListener("click",openAll);
+$("close").addEventListener("click",()=>{ $("panel").hidden=true; selected=null; scope=null; resetView(); drawCars(performance.now()); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") $("close").click(); });
+drawCities();
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
