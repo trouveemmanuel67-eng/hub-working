@@ -560,10 +560,19 @@ const TICKETS=[
   {vin:"XP7YGCEK5PB463314", plate:"MN-314-AL", date:"2026-10-21", place:"Sélestat, centre-ville", type:"Stationnement", amount:35, status:"payé"},
   {vin:"LRWY3DEK5PC464401", plate:"PQ-401-SX", date:"2026-11-02", place:"A4, Saverne", type:"Excès de vitesse", amount:90, status:"à désigner"}
 ];
+/* Une seule liste : FLEET. Le blocage (prêt ou atelier) est porté par v.hold.
+   kind « pret » → onglet INDISPONIBLE. kind « service » → SERVICE CENTER.
+   Les menus de ville et le clic droit ne gardent que les véhicules sans hold. */
 FLEET.forEach(v=>{
   v.surPlace=!PAS_SUR_PLACE.has(v.id);
-  if(HOLD[v.id]) v.status="indisponible";
+  v.hold=HOLD[v.id]||null;
+  if(v.hold) v.status="indisponible";
 });
+function bookable(v){ return !v.hold; }
+function holdLabel(v){
+  if(!v.hold) return "";
+  return v.hold.kind==="service" ? "Service Center" : "Indisponible";
+}
 const STATUS = { disponible:"Disponible", "en essai":"En essai", "en charge":"En charge", indisponible:"Indisponible" };
 function batColor(n){return n>=70?"#3dd68c":n>=40?"#e4b15a":"#e15d4a"}
 const $=id=>document.getElementById(id);
@@ -704,14 +713,9 @@ function showToast(message){
   toastTimer=setTimeout(()=>{ t.hidden=true; }, 1200);
 }
 function vinTail(vin){ return "…"+String(vin||"").slice(-3); }
-function holdOf(id){ return HOLD[id]||null; }
 function backLabel(iso){
   const parts=String(iso||"").split("-");
   return parts.length===3 ? "Retour "+parts[2]+"/"+parts[1] : "";
-}
-function holdExtra(hold){
-  if(!hold) return "";
-  return `<p class="holdline"><span class="holdwhy">${esc(hold.reason)}</span><span class="holdback">${esc(backLabel(hold.back))}</span><span class="tdblock" title="Non réservable en ligne – à bloquer dans le TSS">TD BLOCKER</span></p>`;
 }
 function copyIcon(){
   return '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="4.15" y="1.25" width="8.2" height="8.2" rx="1.3" fill="none" stroke="currentColor" stroke-width="1.2"/><rect x="1.45" y="3.95" width="8.2" height="8.2" rx="1.3" fill="#141416" stroke="currentColor" stroke-width="1.2"/></svg>';
@@ -719,22 +723,27 @@ function copyIcon(){
 function remoteIcon(){
   return '<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5.2 7.4a8.2 8.2 0 0 1 13.6 0"/><path d="M8 9.7a4.5 4.5 0 0 1 8 0"/><rect x="9.15" y="11.5" width="5.7" height="10" rx="1.5"/><circle cx="12" cy="14.45" r="1.15" fill="currentColor" stroke="none"/><path d="M10.25 17.35h3.5M10.25 19.25h3.5"/></svg>';
 }
-function flyRow(v, city){
+function searchStatus(v){
+  if(!v.hold) return "";
+  return `<p class="holdline"><span class="holdwhy">${esc(holdLabel(v))}</span><span class="holdback">${esc(backLabel(v.hold.back))}</span></p>`;
+}
+function flyRow(v, city, mode){
   const on=started.has(v.id);
-  const hold=holdOf(v.id);
+  const hold=v.hold;
   const here=v.surPlace?"Site":"Hors site";
   const tip=[v.model, v.color, v.winter?"pack hiver":""].filter(Boolean).join(" · ");
   const verb=on?"Arrêter":"Démarrer";
   const start=hold
-    ? `<button type="button" class="start" disabled title="Indisponible" aria-label="Indisponible">${remoteIcon()}</button>`
+    ? `<button type="button" class="start" disabled title="${escAttr(holdLabel(v))}" aria-label="${escAttr(holdLabel(v))}">${remoteIcon()}</button>`
     : `<button type="button" class="start${on?" on":""}" data-id="${v.id}" aria-pressed="${on?"true":"false"}" title="${verb}" aria-label="${verb}">${remoteIcon()}</button>`;
-  return `<div class="flyrow${hold?" blocked":""}" data-city="${escAttr(city||"")}" title="${escAttr(tip)}">
+  const extra=mode==="search" ? searchStatus(v) : "";
+  return `<div class="flyrow${hold&&mode==="search"?" blocked":""}" data-city="${escAttr(city||"")}" title="${escAttr(tip)}">
     <span class="vinwrap"><span class="vinshort">${esc(vinTail(v.vin))}</span><button type="button" class="copy vin" data-copy="${escAttr(v.vin)}" data-toast="VIN copié" title="Copier le VIN" aria-label="Copier le VIN">${copyIcon()}</button></span>
     <button type="button" class="copy plate" data-copy="${escAttr(v.plate)}" data-toast="Plaque copiée" title="Cliquer pour copier">${esc(v.plate)}</button>
     <span class="fly-bat"><span class="bar"><i style="width:${v.battery}%;background:${batColor(v.battery)}"></i></span>${v.battery} %</span>
     <span class="herepill${v.surPlace?" on":""}" title="${here}" aria-label="${here}">${here}</span>
     ${start}
-    ${holdExtra(hold)}
+    ${extra}
   </div>`;
 }
 function bindRows(root, onCity){
@@ -764,7 +773,7 @@ function bindRows(root, onCity){
   }));
 }
 function renderFly(){
-  const rows=FLEET.filter(v=>centerById[v.center].city===flyCity);
+  const rows=FLEET.filter(v=>centerById[v.center].city===flyCity && bookable(v));
   const box=$("fly");
   let body="";
   if(flyCity==="Strasbourg"){
@@ -772,7 +781,7 @@ function renderFly(){
       const part=rows.filter(v=>v.center===id);
       return `<h3 class="site">${esc(centerById[id].role)}</h3>`+(part.length?part.map(v=>flyRow(v, flyCity)).join(""):'<p class="empty">Aucun véhicule.</p>');
     }).join("");
-  }else body=rows.map(v=>flyRow(v, flyCity)).join("");
+  }else body=rows.length?rows.map(v=>flyRow(v, flyCity)).join(""):'<p class="empty">Aucun véhicule.</p>';
   box.innerHTML=flyTitle(flyCity)+body;
   bindRows(box);
 }
@@ -1009,10 +1018,8 @@ function ticketCard(item){
   </article>`;
 }
 function holds(kind){
-  return Object.entries(HOLD)
-    .filter(([,h])=>h.kind===kind)
-    .map(([id,h])=>({v:FLEET.find(x=>x.id===id), h}))
-    .filter(x=>x.v)
+  return FLEET.filter(v=>v.hold&&v.hold.kind===kind)
+    .map(v=>({v, h:v.hold}))
     .sort((a,b)=>a.h.back<b.h.back?-1:a.h.back>b.h.back?1:0);
 }
 function holdCard(v, h){
@@ -1066,7 +1073,7 @@ function fleetHead(label, n, sub){
   return `<p class="${sub?"sub":"grp"}"><span>${esc(label)}</span><span class="n">${n}</span></p>`;
 }
 function vehiclesIn(city){
-  return FLEET.filter(v=>centerById[v.center].city===city);
+  return FLEET.filter(v=>centerById[v.center].city===city && bookable(v));
 }
 function renderFleetMenu(){
   const store=vehiclesIn("Strasbourg");
@@ -1197,7 +1204,7 @@ function renderSuggest(){
   const hits=FLEET.filter(v=>vinKey(v.vin).endsWith(q));
   box.hidden=false;
   if(!hits.length){ box.innerHTML='<p class="empty">Aucun véhicule</p>'; return; }
-  box.innerHTML=hits.map(v=>flyRow(v, centerById[v.center].city)).join("");
+  box.innerHTML=hits.map(v=>flyRow(v, centerById[v.center].city, "search")).join("");
   bindRows(box, city=>{
     box.hidden=true;
     openFly(city,true);
