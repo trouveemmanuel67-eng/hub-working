@@ -19,7 +19,9 @@ button,input{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0}
 a{color:inherit}
 .screen{position:relative;height:100vh;overflow:hidden;background:#1a1817}
-.mapstage{position:absolute;inset:0;overflow:hidden;background:#1a1817;cursor:grab;touch-action:none}
+.mapstage{position:absolute;inset:0;overflow:hidden;background:#1a1817;cursor:grab;touch-action:none;-webkit-user-drag:none;user-select:none}
+.mapstage img,.mapstage canvas{-webkit-user-drag:none;user-select:none}
+.mapcover>img{pointer-events:none}
 .mapstage.panning,.mapstage.panning *{cursor:grabbing}
 .mapworld{position:absolute;inset:0}
 .mapcover{position:absolute;top:0;left:0}
@@ -266,10 +268,10 @@ a{color:inherit}
   <div class="mapstage" id="mapstage">
     <div class="mapworld" id="mapworld">
     <div class="mapcover" id="mapcover">
-      <img id="basemap" src="carte-alsace-villes-ronds.png" alt="Carte de l'Alsace">
-      <img id="roads" class="roads" alt="" decoding="async">
-      <button type="button" class="super" data-id="phal" style="left:38.907%;top:12.664%" aria-label="Superchargeur Phalsbourg" title="Superchargeur Phalsbourg"><img src="logo-superchargeur.webp" alt="" width="64" height="64"></button>
-      <button type="button" class="super" data-id="rop" style="left:94.290%;top:29.457%" aria-label="Superchargeur Roppenheim" title="Superchargeur Roppenheim"><img src="logo-superchargeur.webp" alt="" width="64" height="64"></button>
+      <img id="basemap" src="carte-alsace-villes-ronds.png" alt="Carte de l'Alsace" draggable="false">
+      <img id="roads" class="roads" alt="" decoding="async" draggable="false">
+      <button type="button" class="super" data-id="phal" style="left:38.907%;top:12.664%" aria-label="Superchargeur Phalsbourg" title="Superchargeur Phalsbourg"><img src="logo-superchargeur.webp" alt="" width="64" height="64" draggable="false"></button>
+      <button type="button" class="super" data-id="rop" style="left:94.290%;top:29.457%" aria-label="Superchargeur Roppenheim" title="Superchargeur Roppenheim"><img src="logo-superchargeur.webp" alt="" width="64" height="64" draggable="false"></button>
       <div id="hots"></div>
     </div>
     <div class="fly" id="fly" hidden></div>
@@ -461,6 +463,7 @@ function drawCities(){
     b.setAttribute("aria-label",h.city);
     const glow=document.createElement("canvas");
     glow.className="nameglow";
+    glow.draggable=false;
     glow.dataset.sx=String(h.nx0/100*IMG_W);
     glow.dataset.sy=String(h.ny0/100*IMG_H);
     glow.dataset.sw=String((h.nx1-h.nx0)/100*IMG_W);
@@ -859,15 +862,20 @@ document.querySelectorAll(".super").forEach(btn=>btn.addEventListener("click",e=
   openSuper(btn.dataset.id, btn);
 }));
 const stage=$("mapstage");
+stage.addEventListener("dragstart",e=>{ e.preventDefault(); });
 stage.addEventListener("pointerdown",e=>{
   if(e.pointerType==="mouse" && e.button!==0) return;
   if(e.target.closest("#fly")||e.target.closest("#supercard")) return;
+  const interactive=e.target.closest("button, input, textarea, select, a, label");
+  if(!interactive) e.preventDefault();
   panPtr={id:e.pointerId, x:e.clientX, y:e.clientY, ox:panX, oy:panY, moved:false};
+  if(!interactive) stage.setPointerCapture(e.pointerId);
 });
 function movePan(e){
   if(!panPtr||e.pointerId!==panPtr.id) return;
   const dx=e.clientX-panPtr.x, dy=e.clientY-panPtr.y;
   if(!panPtr.moved && Math.hypot(dx,dy)<=5) return;
+  if(!stage.hasPointerCapture(e.pointerId)) stage.setPointerCapture(e.pointerId);
   panPtr.moved=true;
   stage.classList.add("panning");
   setPan(panPtr.ox+dx, panPtr.oy+dy);
