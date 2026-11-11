@@ -8,33 +8,22 @@
 <link rel="icon" href="favicon-16.png" sizes="16x16" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta property="og:title" content="FLEET MAP">
-<meta property="og:image" content="https://trouveemmanuel67-eng.github.io/hub-working/flotte/logo-fleet-map-header.webp">
+<meta property="og:image" content="https://trouveemmanuel67-eng.github.io/hub-working/flotte/logo-fleet-map-v2.webp">
 <meta property="og:image:type" content="image/webp">
-<meta property="og:image:width" content="447">
-<meta property="og:image:height" content="410">
+<meta property="og:image:width" content="672">
+<meta property="og:image:height" content="618">
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;height:100vh;overflow:hidden;background:#1a1817;color:#fff;font-family:Inter,"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:400}
 button,input{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0}
+a{color:inherit}
 .screen{position:relative;height:100vh;overflow:hidden;background:#1a1817}
 .mapstage{position:absolute;inset:0;overflow:hidden;background:#1a1817}
 .mapcover{position:absolute;top:0;left:0}
 .mapcover img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;filter:none;opacity:1;display:block}
 #hots{position:absolute;inset:0;pointer-events:none;z-index:2}
 .hot{position:absolute;z-index:2;background:transparent;padding:0;cursor:pointer;pointer-events:auto;overflow:visible}
-.zoom{position:absolute;pointer-events:none;transform-origin:var(--ox) var(--oy);opacity:0;transition:transform 180ms ease,opacity 160ms ease}
-.zoom canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-.zoom .cover{
-  -webkit-mask-image:linear-gradient(to right, transparent var(--eA), #fff var(--e0), #fff var(--e1), transparent var(--eB)), linear-gradient(to bottom, transparent var(--fA), #fff var(--f0), #fff var(--f1), transparent var(--fB));
-  -webkit-mask-composite:source-in;
-  mask-image:linear-gradient(to right, transparent var(--eA), #fff var(--e0), #fff var(--e1), transparent var(--eB)), linear-gradient(to bottom, transparent var(--fA), #fff var(--f0), #fff var(--f1), transparent var(--fB));
-  mask-composite:intersect;
-  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat
-}
-.hot:hover .zoom,.hot.on .zoom{opacity:1;transform:scale(1.08);transition:transform 180ms ease,opacity 0s}
-.zoom .glow{transition:filter 180ms ease}
-.hot:hover .glow,.hot.on .glow{filter:brightness(1.16) drop-shadow(0 0 2px rgba(255,255,255,.82)) drop-shadow(0 0 5px rgba(255,255,255,.28))}
 .mapcover img.roads{
   z-index:1;pointer-events:none;opacity:0;transition:opacity 250ms ease;
   --rx:50%;--ry:30%;--rr:180px;
@@ -43,37 +32,171 @@ button{cursor:pointer;background:none;border:0}
   -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat
 }
 .mapcover img.roads.on{opacity:.88}
-.fly{position:fixed;z-index:18;width:min(320px,calc(100vw - 16px));overflow:auto;background:#0e0e10;border:1px solid #3a3a3c;border-radius:16px;box-shadow:0 18px 44px rgba(0,0,0,.5);padding:10px 10px 6px}
-.fly[hidden]{display:none}
-.fly-title{margin:2px 6px 8px;font-size:15px;font-weight:600}
-.fly .site{margin:10px 6px 6px}
-.flyrow{padding:8px 8px 7px;margin:0 0 6px;border-radius:12px;background:#141416;border:1px solid #2c2c2e}
-.fly-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.fly-vin{font-size:13px;font-weight:600;letter-spacing:.01em}
-.fly-bat{display:flex;align-items:center;gap:6px;font-size:12px;color:#d1d1d6;white-space:nowrap}
-.bar{width:38px;height:6px;border-radius:99px;background:#2a2a2e;overflow:hidden}
-.bar i{display:block;height:100%;border-radius:99px}
-.fly-sub{margin-top:3px;font-size:11px;color:#8e8e93}
-.fly-here{margin-top:4px;display:flex;align-items:center;gap:6px;font-size:12px}
-.here{width:8px;height:8px;border-radius:50%;background:#8e8e93;flex:0 0 auto}
-.here.on{background:#3dd68c}
-.topbar{position:absolute;z-index:8;top:calc(12px + env(safe-area-inset-top, 0px));left:calc(12px + env(safe-area-inset-left, 0px));right:calc(12px + env(safe-area-inset-right, 0px));height:46px;display:flex;align-items:center;justify-content:flex-end;gap:12px;pointer-events:none;overflow:visible}
-.topbar>*{pointer-events:auto}
-.brand{position:absolute;left:0;top:0;margin:0;line-height:0;pointer-events:none}
-.brand img{display:block;width:149px;height:auto;filter:drop-shadow(0 2px 5px rgba(0,0,0,.7))}
-.search{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:7;display:flex;align-items:center;gap:4px;width:108px;background:rgba(12,12,14,.72);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:8px 10px;backdrop-filter:blur(12px)}
+.rail{
+  position:absolute;z-index:8;
+  top:calc(12px + env(safe-area-inset-top, 0px));
+  left:calc(12px + env(safe-area-inset-left, 0px));
+  bottom:calc(12px + env(safe-area-inset-bottom, 0px));
+  width:232px;
+  display:flex;flex-direction:column;align-items:stretch;gap:18px;
+  padding:22px;
+  color:rgba(255,255,255,.75);
+  background:rgba(10,10,10,.62);
+  border:1px solid rgba(255,255,255,.85);
+  border-top:2px solid rgba(255,255,255,.95);
+  border-radius:0;
+  box-shadow:0 10px 28px rgba(0,0,0,.45);
+  overflow:visible
+}
+.rail-head{position:relative}
+.brand{margin:0;line-height:0}
+.brand img{display:block;width:100%;height:auto}
+.rail-x{display:none}
+.search{
+  position:relative;z-index:2;
+  display:flex;align-items:center;gap:4px;
+  width:108px;height:40px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.85);
+  border-radius:0;
+  padding:0 10px;
+  color:rgba(255,255,255,.75)
+}
+.search input{width:4.8ch;border:0;outline:none;background:transparent;font-size:16px;letter-spacing:.06em;font-variant-numeric:tabular-nums;color:inherit}
+.search input::placeholder{color:rgba(255,255,255,.45);letter-spacing:.08em}
+.suggest{
+  position:absolute;top:calc(100% + 8px);left:0;
+  width:min(460px, calc(100vw - 36px));
+  max-height:min(420px,62vh);overflow:auto;
+  background:rgba(10,10,10,.94);
+  border:1px solid rgba(255,255,255,.85);
+  border-radius:0;
+  box-shadow:0 10px 28px rgba(0,0,0,.45);
+  padding:8px
+}
+.suggest[hidden]{display:none}
+.gestion{display:flex;flex-direction:column;gap:0}
+.gestion-toggle{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;height:44px;text-align:left;padding:0 12px;
+  border-radius:0;
+  border:1px solid rgba(255,255,255,.85);
+  background:transparent;
+  color:#fff;font-size:13px;font-weight:600;letter-spacing:.08em;
+  transition:color 150ms ease,background-color 150ms ease,border-color 150ms ease
+}
+.gestion-toggle:hover{color:#fff}
+.gestion-toggle .chev{opacity:.75;transition:transform 150ms ease}
+.gestion-toggle[aria-expanded="true"]{
+  background:#1c1c1c;color:#e6e6e6;font-weight:600;
+  border-color:transparent;border-top:3px solid #d9d9d9
+}
+.gestion-toggle[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.gestion-list{display:flex;flex-direction:column;gap:0}
+.gestion-list[hidden]{display:none}
+.glink{
+  display:flex;align-items:center;justify-content:flex-start;
+  height:44px;padding:0 12px;border-radius:0;text-decoration:none;
+  border:0;border-top:3px solid transparent;
+  background:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,.55)) top / 100% 1px no-repeat;
+  color:rgba(255,255,255,.55);
+  font-size:13px;font-weight:400;letter-spacing:.04em;
+  transition:color 150ms ease,background-color 150ms ease,border-color 150ms ease
+}
+.glink:hover{color:rgba(255,255,255,.82)}
+.glink.is-on{
+  background:#1c1c1c;color:#e6e6e6;font-weight:600;
+  border-top-color:#d9d9d9
+}
+.glink.is-on:hover{color:#fff}
+.glink.is-empty{cursor:pointer}
+.navbtn{
+  display:none;position:absolute;z-index:12;
+  top:calc(16px + env(safe-area-inset-top, 0px));
+  left:calc(12px + env(safe-area-inset-left, 0px));
+  width:40px;height:40px;place-items:center;
+  border-radius:0;color:#fff;font-size:18px;
+  background:rgba(10,10,10,.62);
+  border:1px solid rgba(255,255,255,.85);
+  box-shadow:0 10px 28px rgba(0,0,0,.45)
+}
+.wordmark{
+  position:absolute;z-index:9;margin:0;line-height:0;pointer-events:none;
+  top:calc(20px + env(safe-area-inset-top, 0px));
+  left:calc(244px + (100% - 244px) / 2);
+  transform:translateX(-50%);
+  width:290px
+}
+.wordmark img{display:block;width:100%;height:auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.8))}
+.tools{
+  position:absolute;z-index:9;
+  top:calc(12px + env(safe-area-inset-top, 0px));
+  right:calc(12px + env(safe-area-inset-right, 0px));
+  display:flex;align-items:center;gap:10px
+}
 .iconbtn{width:40px;height:40px;flex:0 0 auto;display:grid;place-items:center;color:#f2f2f2;border-radius:50%;background:rgba(12,12,14,.72);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(12px)}
 .avatar{width:40px;height:40px;flex:0 0 auto;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(12,12,14,.72);display:grid;place-items:center;backdrop-filter:blur(12px)}
 .avatar span{font-size:11px;letter-spacing:.04em;color:#d1d1d6}
-.tools{display:flex;align-items:center;gap:10px;flex:0 0 auto}
-@media (max-width:720px){
-  .brand img{width:102px}
+@media (max-width:700px){
+  .rail{display:none;bottom:auto;height:auto;max-height:calc(100vh - 24px);width:min(232px, calc(100vw - 24px));overflow:auto}
+  .rail.open{display:flex}
+  .navbtn{display:grid}
+  .screen.menu-open .navbtn{display:none}
+  .wordmark{width:180px;left:50%}
+  .rail-x{
+    display:grid;place-items:center;position:absolute;top:0;right:0;
+    width:32px;height:32px;border-radius:0;color:#fff;
+    border:1px solid rgba(255,255,255,.85);background:rgba(10,10,10,.4)
+  }
+  .brand{padding-right:36px}
+  .herepill .long{display:none}
+  .herepill .short{display:inline}
 }
-.search input{width:4.8ch;border:0;outline:none;background:transparent;font-size:16px;letter-spacing:.06em;font-variant-numeric:tabular-nums}
-.search input::placeholder{color:rgba(255,255,255,.5);letter-spacing:.08em}
-.suggest{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);width:min(320px,calc(100vw - 16px));max-height:min(420px,62vh);overflow:auto;background:#0e0e10;border:1px solid #3a3a3c;border-radius:16px;box-shadow:0 18px 44px rgba(0,0,0,.5);padding:8px}
-.suggest[hidden]{display:none}
-.suggest .flyrow{width:100%;text-align:left;cursor:pointer;display:block}
+.fly{
+  position:fixed;z-index:18;
+  width:min(460px, calc(100vw - 16px));
+  overflow:auto;background:#0e0e10;
+  border:1px solid rgba(176,176,181,.65);
+  border-radius:16px;
+  box-shadow:0 12px 32px rgba(0,0,0,.55);
+  padding:8px 8px 4px
+}
+.fly[hidden]{display:none}
+.fly-title{margin:2px 6px 6px;font-size:15px;font-weight:600}
+.fly .site{margin:8px 6px 4px;font-size:12px;font-weight:500;letter-spacing:.03em;color:#d1d1d6}
+.flyrow{
+  height:34px;display:flex;align-items:center;gap:8px;
+  padding:0 8px;margin:0 0 4px;border-radius:10px;
+  background:#141416;border:1px solid #2c2c2e;
+  white-space:nowrap
+}
+.copy{cursor:pointer;background:none;border:0;padding:0;font-size:12px;font-weight:600;letter-spacing:.01em;color:#fff}
+.copy.plate{font-weight:500;color:#d1d1d6}
+.fly-bat{display:flex;align-items:center;gap:5px;font-size:12px;color:#d1d1d6;flex:0 0 auto}
+.bar{width:36px;height:5px;border-radius:99px;background:#2a2a2e;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px}
+.herepill{
+  flex:0 0 auto;font-size:11px;line-height:1;
+  border-radius:999px;padding:3px 7px;
+  border:1px solid rgba(176,176,181,.65);color:#d1d1d6
+}
+.herepill.on{border-color:#3dd68c;color:#d8ffe8}
+.herepill .short{display:none}
+.start{
+  margin-left:auto;flex:0 0 auto;height:24px;padding:0 8px;
+  border-radius:999px;border:1px solid rgba(176,176,181,.7);
+  background:transparent;color:#fff;font-size:11px;
+  display:inline-flex;align-items:center;gap:4px
+}
+.start.on{background:#123524;border-color:#3dd68c;color:#d8ffe8}
+.toast{
+  position:fixed;z-index:40;left:50%;bottom:28px;transform:translateX(-50%);
+  background:rgba(18,18,20,.92);
+  border:1px solid rgba(176,176,181,.65);
+  border-radius:999px;padding:8px 14px;font-size:13px;
+  box-shadow:0 12px 32px rgba(0,0,0,.55)
+}
+.toast[hidden]{display:none}
 .sheet{position:fixed;inset:0;z-index:20;background:#000;display:flex;flex-direction:column}
 .sheet[hidden]{display:none}
 .sh{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 16px 8px}
@@ -94,7 +217,7 @@ button{cursor:pointer;background:none;border:0}
 .meta{display:block;color:#8e8e93;font-size:12px;margin-top:3px}
 .flake{margin-left:4px}
 .pill{font-size:11px;border-radius:999px;padding:4px 8px;border:1px solid #3a3a3c;color:#d1d1d6;white-space:nowrap}
-.empty{color:#8e8e93}
+.empty{color:#8e8e93;margin:6px}
 :focus-visible{outline:2px solid #fff;outline-offset:2px}
 @media(min-width:900px){
   .sheet{left:auto;width:420px;border-left:1px solid #2c2c2e}
@@ -102,7 +225,7 @@ button{cursor:pointer;background:none;border:0}
 </style>
 </head>
 <body>
-<div class="screen">
+<div class="screen menu-open" id="screen">
   <div class="mapstage" id="mapstage">
     <div class="mapcover" id="mapcover">
       <img id="basemap" src="carte-alsace-villes-ronds.png" alt="Carte de l'Alsace">
@@ -110,21 +233,31 @@ button{cursor:pointer;background:none;border:0}
       <div id="hots"></div>
     </div>
   </div>
-  <div class="topbar">
-    <h1 class="brand" aria-label="FLEET MAP"><img src="logo-fleet-map-header.webp" alt="FLEET MAP" width="447" height="410"></h1>
+  <button type="button" class="navbtn" id="navbtn" aria-label="Ouvrir le menu" aria-expanded="true">☰</button>
+  <aside class="rail open" id="rail">
+    <div class="rail-head">
+      <h1 class="brand" aria-label="FLEET MAP"><img src="logo-fleet-map-v2.webp" alt="FLEET MAP" width="672" height="618"></h1>
+      <button type="button" class="rail-x" id="railx" aria-label="Fermer le menu">✕</button>
+    </div>
     <label class="search"><span aria-hidden="true">⌕</span>
       <input id="q" type="text" inputmode="numeric" maxlength="4" placeholder="VIN" autocomplete="off" aria-label="Rechercher un VIN">
       <div class="suggest" id="suggest" hidden></div>
     </label>
-    <div class="tools">
-      <button type="button" class="iconbtn" aria-label="Messages">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 6.5h14v9H8l-3 2.5z" stroke-linejoin="round"/></svg>
-      </button>
-      <button type="button" class="avatar" aria-label="Profil"><span>ES</span></button>
+    <div class="gestion">
+      <button type="button" class="gestion-toggle" id="gestion-toggle" aria-expanded="false" aria-controls="gestion-list">GESTION <span class="chev" aria-hidden="true">▾</span></button>
+      <div class="gestion-list" id="gestion-list" hidden></div>
     </div>
+  </aside>
+  <p class="wordmark" aria-hidden="true"><img src="logo-fleet-map-v3.webp" alt="" width="1294" height="103"></p>
+  <div class="tools">
+    <button type="button" class="iconbtn" aria-label="Messages">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 6.5h14v9H8l-3 2.5z" stroke-linejoin="round"/></svg>
+    </button>
+    <button type="button" class="avatar" aria-label="Profil"><span>ES</span></button>
   </div>
 </div>
 <div class="fly" id="fly" hidden></div>
+<div class="toast" id="toast" hidden role="status"></div>
 <aside class="sheet" id="sheet" hidden>
   <div class="sh">
     <div>
@@ -137,6 +270,8 @@ button{cursor:pointer;background:none;border:0}
   <div class="list" id="list"></div>
 </aside>
 <script>
+const GESTION_LINKS = {TSS:'', GARAGE:'', REGISTRATION:'', LIVE:'', SMP:''};
+const GESTION_KEY="fleet-gestion-active";
 /* Centres. x et y : position sur la carte principale (viewBox 0 0 1000 720), nord en haut.
    Les deux sites de Strasbourg sont volontairement proches.
    SIDEKICK peut déplacer un centre sans changer le reste des données. */
@@ -206,9 +341,11 @@ function batColor(n){return n>=70?"#3dd68c":n>=40?"#e4b15a":"#e15d4a"}
 const $=id=>document.getElementById(id);
 const centerById=Object.fromEntries(CENTERS.map(c=>[c.id,c]));
 let scope=null, selected=null, query="";
+const started=new Set();
 
 function norm(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()}
 function esc(s){return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}
+function escAttr(s){return esc(s).replace(/"/g,"&quot;")}
 function vinKey(s){return String(s||"").replace(/\s+/g,"").toLowerCase()}
 function hit(v){
   const q=vinKey(query);
@@ -223,7 +360,6 @@ function inScope(v){
 function visible(v){return hit(v)&&inScope(v)}
 
 /* Boîtes mesurées sur les pixels clairs (luminance > 150) de la carte dérivée, hors disque. */
-const SCALE=1.08;
 const HOTS=[
   {city:"Sarrebourg", left:23.25, top:12.10, width:12.35, height:5.50, cx:24.46, cy:16.17, nameBottom:14.305, markBottom:17.112, ncx:30.612, ncy:13.339, nx0:25.796, ny0:12.314, nx1:35.428, ny1:14.364, cr:82},
   {city:"Saverne", left:42.40, top:13.20, width:9.40, height:5.40, cx:43.87, cy:16.86, nameBottom:15.396, markBottom:17.845, ncx:48.528, ncy:14.430, nx0:45.362, ny0:13.405, nx1:51.694, ny1:15.455, cr:82},
@@ -235,33 +371,27 @@ const IMG_W=7912, IMG_H=6781;
 const Y_SAR=0.1617, Y_SEL=0.5973;
 const GAP_Y=Y_SEL-Y_SAR;
 const Y0=Y_SAR-0.30*GAP_Y, Y1=Y_SEL+0.20*GAP_Y;
-const MID_X=(0.2446+0.8150)/2;
 const ALL_X0=0.2316, ALL_X1=0.8278;
-const MUST_X0=0.2316, MUST_X1=0.6784;
-let flyCity=null, flySticky=false, flyTimer=null;
-function visualFor(h){
-  const ox=h.ncx/100*IMG_W, oy=h.ncy/100*IMG_H;
-  const x0=h.nx0/100*IMG_W, y0=h.ny0/100*IMG_H, x1=h.nx1/100*IMG_W, y1=h.ny1/100*IMG_H;
-  const cx=h.cx/100*IMG_W, cy=h.cy/100*IMG_H, cr=h.cr;
-  const boxL=Math.min(x0, cx-cr), boxT=Math.min(y0, cy-cr);
-  const boxR=Math.max(x1, cx+cr), boxB=Math.max(y1, cy+cr);
-  const pts=[[boxL,boxT],[boxR,boxT],[boxL,boxB],[boxR,boxB]];
-  let contentR=1;
-  for(const [x,y] of pts) contentR=Math.max(contentR, Math.hypot(x-ox, y-oy));
-  const fade=56;
-  const R=contentR+fade;
-  const left=ox-R, top=oy-R, size=2*R;
-  const pct=v=>v/size*100;
-  return {
-    left:left/IMG_W*100, top:top/IMG_H*100,
-    width:size/IMG_W*100, height:size/IMG_H*100,
-    eA:Math.max(0, pct(boxL-left)-pct(fade)),
-    e0:pct(boxL-left), e1:pct(boxR-left),
-    eB:Math.min(100, pct(boxR-left)+pct(fade)),
-    fA:Math.max(0, pct(boxT-top)-pct(fade)),
-    f0:pct(boxT-top), f1:pct(boxB-top),
-    fB:Math.min(100, pct(boxB-top)+pct(fade))
-  };
+let flyCity=null, flySticky=false, flyTimer=null, toastTimer=null;
+
+function usefulBox(){
+  const stage=$("mapstage").getBoundingClientRect();
+  const mobile=window.matchMedia("(max-width:700px)").matches;
+  const rail=$("rail");
+  const open=!mobile || rail.classList.contains("open");
+  if(!open) return {x:0,y:0,w:stage.width,h:stage.height,minMenu:8};
+  const rr=rail.getBoundingClientRect();
+  if(!mobile){
+    const x=rr.right-stage.left+8;
+    return {x, y:0, w:Math.max(160, stage.width-x), h:stage.height, minMenu:rr.right+8};
+  }
+  const right=stage.width-(rr.right-stage.left+8);
+  if(right>=320){
+    const x=rr.right-stage.left+8;
+    return {x, y:0, w:right, h:stage.height, minMenu:rr.right+8};
+  }
+  const y=Math.max(0, rr.bottom-stage.top+8);
+  return {x:0, y, w:stage.width, h:Math.max(180, stage.height-y), minMenu:8};
 }
 function drawCities(){
   const g=$("hots");
@@ -275,26 +405,6 @@ function drawCities(){
     b.style.width=h.width+"%";
     b.style.height=h.height+"%";
     b.setAttribute("aria-label",h.city);
-    const ox=(h.cx-h.left)/h.width*100, oy=(h.cy-h.top)/h.height*100;
-    b.dataset.ox=String(ox);
-    b.dataset.oy=String(oy);
-    const vis=visualFor(h);
-    const zoom=document.createElement("span");
-    zoom.className="zoom";
-    zoom.style.left=((vis.left-h.left)/h.width*100)+"%";
-    zoom.style.top=((vis.top-h.top)/h.height*100)+"%";
-    zoom.style.width=(vis.width/h.width*100)+"%";
-    zoom.style.height=(vis.height/h.height*100)+"%";
-    const zox=(h.ncx-vis.left)/vis.width*100, zoy=(h.ncy-vis.top)/vis.height*100;
-    zoom.style.setProperty("--ox", zox+"%");
-    zoom.style.setProperty("--oy", zoy+"%");
-    for(const k of ["eA","e0","e1","eB","fA","f0","f1","fB"]) zoom.style.setProperty("--"+k, vis[k].toFixed(2)+"%");
-    const cover=document.createElement("canvas");
-    cover.className="cover";
-    const glow=document.createElement("canvas");
-    glow.className="glow";
-    zoom.append(cover, glow);
-    b.append(zoom);
     b.addEventListener("pointerenter",()=>{
       if(flySticky && flyCity!==h.city) return;
       openFly(h.city,false);
@@ -308,15 +418,69 @@ function drawCities(){
     g.append(b);
   }
 }
-function flyRow(v){
+function fallbackCopy(text){
+  const ta=document.createElement("textarea");
+  ta.value=text;
+  ta.setAttribute("readonly","");
+  ta.style.position="fixed";
+  ta.style.left="-9999px";
+  document.body.appendChild(ta);
+  ta.select();
+  try{ document.execCommand("copy"); }catch(e){}
+  ta.remove();
+}
+function copyText(text){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(text).catch(()=>fallbackCopy(text));
+  }
+  fallbackCopy(text);
+  return Promise.resolve();
+}
+function showToast(message){
+  const t=$("toast");
+  t.textContent=message;
+  t.hidden=false;
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{ t.hidden=true; }, 1200);
+}
+function startIcon(on){
+  if(on) return '<svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4" fill="#3dd68c"/></svg>';
+  return '<svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2.1 1.15v7.7L8.7 5z" fill="currentColor"/></svg>';
+}
+function flyRow(v, city){
+  const on=started.has(v.id);
   const here=v.surPlace;
-  const sub=[v.model,v.plate,v.winter?"pack hiver":""].filter(Boolean).join(" · ");
-  return `<div class="flyrow">
-    <div class="fly-top"><span class="fly-vin">${esc(v.vin)}</span>
-      <span class="fly-bat"><span class="bar"><i style="width:${v.battery}%;background:${batColor(v.battery)}"></i></span>${v.battery} %</span></div>
-    <div class="fly-sub">${esc(sub)}</div>
-    <div class="fly-here"><span class="here${here?" on":""}"></span>${here?"Sur place":"Pas sur place"}</div>
+  const tip=[v.model, v.color, v.winter?"pack hiver":""].filter(Boolean).join(" · ");
+  const hereLong=here?"Sur place":"Pas sur place";
+  const hereShort=here?"Ici":"Absent";
+  return `<div class="flyrow" data-city="${escAttr(city||"")}" title="${escAttr(tip)}">
+    <button type="button" class="copy vin" data-copy="${escAttr(v.vin)}" data-toast="VIN copié" title="Cliquer pour copier">${esc(v.vin)}</button>
+    <button type="button" class="copy plate" data-copy="${escAttr(v.plate)}" data-toast="Plaque copiée" title="Cliquer pour copier">${esc(v.plate)}</button>
+    <span class="fly-bat"><span class="bar"><i style="width:${v.battery}%;background:${batColor(v.battery)}"></i></span>${v.battery} %</span>
+    <span class="herepill${here?" on":""}" title="${hereLong}"><span class="long">${hereLong}</span><span class="short">${hereShort}</span></span>
+    <button type="button" class="start${on?" on":""}" data-id="${v.id}">${startIcon(on)}${on?"Démarré":"Démarrer"}</button>
   </div>`;
+}
+function bindRows(root, onCity){
+  root.querySelectorAll(".copy").forEach(b=>b.addEventListener("click",e=>{
+    e.stopPropagation();
+    e.preventDefault();
+    copyText(b.dataset.copy).then(()=>showToast(b.dataset.toast));
+  }));
+  root.querySelectorAll(".start").forEach(b=>b.addEventListener("click",e=>{
+    e.stopPropagation();
+    e.preventDefault();
+    if(started.has(b.dataset.id)) started.delete(b.dataset.id);
+    else started.add(b.dataset.id);
+    if(!$("fly").hidden) renderFly();
+    if(!$("suggest").hidden) renderSuggest();
+  }));
+  if(!onCity) return;
+  root.querySelectorAll(".flyrow").forEach(row=>row.addEventListener("click",e=>{
+    if(e.target.closest(".copy,.start")) return;
+    e.stopPropagation();
+    onCity(row.dataset.city);
+  }));
 }
 function renderFly(){
   const rows=FLEET.filter(v=>centerById[v.center].city===flyCity);
@@ -325,49 +489,37 @@ function renderFly(){
   if(flyCity==="Strasbourg"){
     body=["sxb-sales","sxb-essai"].map(id=>{
       const part=rows.filter(v=>v.center===id);
-      return `<h3 class="site">${esc(centerById[id].role)}</h3>`+(part.length?part.map(flyRow).join(""):'<p class="empty">Aucun véhicule.</p>');
+      return `<h3 class="site">${esc(centerById[id].role)}</h3>`+(part.length?part.map(v=>flyRow(v, flyCity)).join(""):'<p class="empty">Aucun véhicule.</p>');
     }).join("");
-  }else body=rows.map(flyRow).join("");
+  }else body=rows.map(v=>flyRow(v, flyCity)).join("");
   box.innerHTML=`<p class="fly-title">${esc(flyCity)}</p>`+body;
-}
-function grownBox(btn){
-  const r=btn.getBoundingClientRect();
-  const ox=parseFloat(btn.dataset.ox)/100, oy=parseFloat(btn.dataset.oy)/100;
-  const s=SCALE;
-  const oxp=r.left+ox*r.width, oyp=r.top+oy*r.height;
-  return {
-    top:oyp-(oyp-r.top)*s,
-    bottom:oyp+(r.bottom-oyp)*s,
-    left:oxp-(oxp-r.left)*s,
-    right:oxp+(r.right-oxp)*s,
-    midX:oxp
-  };
+  bindRows(box);
 }
 function anchorLow(btn){
   const h=HOTS.find(x=>x.city===btn.getAttribute("aria-label"));
   const cover=$("mapcover").getBoundingClientRect();
-  const oy=cover.top+h.ncy/100*cover.height;
-  const y=cover.top+Math.max(h.nameBottom,h.markBottom)/100*cover.height;
-  return oy+(y-oy)*SCALE;
+  return cover.top+Math.max(h.nameBottom,h.markBottom)/100*cover.height;
 }
 function placeFly(){
   const btn=[...document.querySelectorAll(".hot")].find(b=>b.getAttribute("aria-label")===flyCity);
   const fly=$("fly");
   if(!btn||fly.hidden) return;
-  const g=grownBox(btn);
+  const box=usefulBox();
+  const r=btn.getBoundingClientRect();
   const low=anchorLow(btn);
   const gap=8, pad=8;
+  const avail=Math.max(220, window.innerWidth-pad-box.minMenu);
+  fly.style.width=Math.min(460, avail)+"px";
   const below=window.innerHeight-pad-(low+gap);
-  const above=g.top-gap-pad;
+  const above=r.top-gap-pad;
   const useBelow=below>=150||below>=above;
   fly.style.maxHeight=Math.max(120, Math.min(480, useBelow?below:above))+"px";
-  fly.style.left="0px";
-  fly.style.top="0px";
   const w=fly.offsetWidth, h=fly.offsetHeight;
-  let top=useBelow?low+gap:Math.max(pad, g.top-gap-h);
+  let top=useBelow?low+gap:Math.max(pad, r.top-gap-h);
   if(top+h>window.innerHeight-pad) top=Math.max(pad, window.innerHeight-pad-h);
-  let left=g.midX-w/2;
-  left=Math.min(Math.max(pad,left), window.innerWidth-pad-w);
+  let left=r.left+r.width/2-w/2;
+  const maxLeft=window.innerWidth-pad-w;
+  left=Math.min(Math.max(box.minMenu, left), Math.max(box.minMenu, maxLeft));
   fly.style.left=left+"px";
   fly.style.top=top+"px";
 }
@@ -410,17 +562,13 @@ function closeFly(){
   setRoads(null);
 }
 function layoutMap(){
-  const stage=$("mapstage");
-  const viewW=stage.clientWidth, viewH=stage.clientHeight;
+  const box=usefulBox();
+  const viewW=box.w, viewH=box.h;
   if(!viewW||!viewH) return;
   const vFrac=Y1-Y0;
   let scale=viewH/(vFrac*IMG_H);
-  const allSpan=(ALL_X1-ALL_X0)*IMG_W;
-  const mustSpan=(MUST_X1-MUST_X0)*IMG_W+28;
-  if(allSpan*scale>viewW){
-    const fit=viewW/mustSpan;
-    if(fit<scale) scale=fit;
-  }
+  const allSpan=(ALL_X1-ALL_X0)*IMG_W+36;
+  if(allSpan*scale>viewW) scale=viewW/allSpan;
   const dispW=IMG_W*scale, dispH=IMG_H*scale;
   let top;
   if(dispH<=viewH+0.5) top=(viewH-dispH)/2;
@@ -429,55 +577,56 @@ function layoutMap(){
     if(top>0) top=0;
     if(top+dispH<viewH) top=viewH-dispH;
   }
-  let left;
-  const focus=allSpan*scale>viewW+1?(MUST_X0+MUST_X1)/2:MID_X;
-  if(dispW<=viewW+0.5) left=(viewW-dispW)/2;
-  else{
-    left=viewW/2-focus*dispW;
-    if(left>0) left=0;
-    if(left+dispW<viewW) left=viewW-dispW;
-  }
+  const leftSafe=6-ALL_X0*dispW;
+  let left=leftSafe;
+  const leftCover=viewW-dispW;
+  if(leftCover>left) left=leftCover;
   const cover=$("mapcover");
   cover.style.width=dispW+"px";
   cover.style.height=dispH+"px";
-  cover.style.left=left+"px";
-  cover.style.top=top+"px";
+  cover.style.left=(box.x+left)+"px";
+  cover.style.top=(box.y+top)+"px";
   cover.style.transform="none";
-}
-function paintGlow(){
-  const src=$("basemap");
-  if(!src.naturalWidth) return;
-  const nw=src.naturalWidth, nh=src.naturalHeight;
-  document.querySelectorAll(".hot").forEach(b=>{
-    const zoom=b.querySelector(".zoom");
-    const cover=zoom.querySelector(".cover");
-    const glow=zoom.querySelector(".glow");
-    const bl=parseFloat(b.style.left), bt=parseFloat(b.style.top);
-    const bw=parseFloat(b.style.width), bh=parseFloat(b.style.height);
-    const left=bl+parseFloat(zoom.style.left)/100*bw;
-    const top=bt+parseFloat(zoom.style.top)/100*bh;
-    const width=parseFloat(zoom.style.width)/100*bw;
-    const height=parseFloat(zoom.style.height)/100*bh;
-    const sx=left/100*nw, sy=top/100*nh, sw=width/100*nw, sh=height/100*nh;
-    const dw=Math.max(1, Math.round(sw)), dh=Math.max(1, Math.round(sh));
-    cover.width=dw; cover.height=dh;
-    glow.width=dw; glow.height=dh;
-    cover.getContext("2d").drawImage(src, sx, sy, sw, sh, 0, 0, dw, dh);
-    const ctx=glow.getContext("2d",{willReadFrequently:true});
-    ctx.drawImage(src, sx, sy, sw, sh, 0, 0, dw, dh);
-    const image=ctx.getImageData(0,0,dw,dh);
-    const d=image.data;
-    for(let i=0;i<d.length;i+=4){
-      const y=0.2126*d[i]+0.7152*d[i+1]+0.0722*d[i+2];
-      d[i+3]=y>=230?255:y>180?Math.round((y-180)/50*255):0;
-    }
-    ctx.putImageData(image,0,0);
-  });
 }
 function scheduleFlyClose(){
   if(flySticky) return;
   clearTimeout(flyTimer);
   flyTimer=setTimeout(closeFly, 220);
+}
+function setMenu(open){
+  $("rail").classList.toggle("open", open);
+  $("screen").classList.toggle("menu-open", open);
+  $("navbtn").setAttribute("aria-expanded", open?"true":"false");
+  $("navbtn").setAttribute("aria-label", open?"Fermer le menu":"Ouvrir le menu");
+  layoutMap();
+  if(flyCity){ placeFly(); setRoads(flyCity); }
+}
+function gestionActive(){
+  try{ return localStorage.getItem(GESTION_KEY)||""; }catch(e){ return ""; }
+}
+function selectGestion(name){
+  try{ localStorage.setItem(GESTION_KEY, name); }catch(e){}
+  document.querySelectorAll(".glink").forEach(el=>{
+    const on=el.dataset.key===name;
+    el.classList.toggle("is-on", on);
+    if(on) el.setAttribute("aria-current","true");
+    else el.removeAttribute("aria-current");
+  });
+}
+function renderGestion(){
+  const active=gestionActive();
+  const box=$("gestion-list");
+  box.innerHTML=Object.entries(GESTION_LINKS).map(([name,url])=>{
+    const on=name===active;
+    const cls="glink"+(url?"":" is-empty")+(on?" is-on":"");
+    const current=on?' aria-current="true"':"";
+    if(url) return `<a class="${cls}" data-key="${escAttr(name)}" href="${escAttr(url)}" target="_blank" rel="noopener"${current}>${esc(name)}</a>`;
+    return `<a class="${cls}" data-key="${escAttr(name)}" href="#" title="Lien à renseigner"${current}>${esc(name)}</a>`;
+  }).join("");
+  box.querySelectorAll(".glink").forEach(a=>a.addEventListener("click",e=>{
+    if(!GESTION_LINKS[a.dataset.key]) e.preventDefault();
+    selectGestion(a.dataset.key);
+  }));
 }
 
 function rowHtml(v){
@@ -539,38 +688,40 @@ function renderSuggest(){
   const hits=FLEET.filter(v=>vinKey(v.vin).endsWith(q));
   box.hidden=false;
   if(!hits.length){ box.innerHTML='<p class="empty">Aucun véhicule</p>'; return; }
-  box.innerHTML=hits.map(v=>{
-    const c=centerById[v.center];
-    const here=v.surPlace;
-    return `<button type="button" class="flyrow" data-city="${esc(c.city)}">
-      <div class="fly-top"><span class="fly-vin">${esc(v.vin)}</span>
-        <span class="fly-bat"><span class="bar"><i style="width:${v.battery}%;background:${batColor(v.battery)}"></i></span>${v.battery} %</span></div>
-      <div class="fly-here"><span class="here${here?" on":""}"></span>${here?"Sur place":"Pas sur place"}</div>
-      <div class="fly-sub">${esc(c.city)} · ${esc(c.role)}</div>
-    </button>`;
-  }).join("");
-  box.querySelectorAll("button").forEach(b=>b.addEventListener("click",e=>{
-    e.stopPropagation();
+  box.innerHTML=hits.map(v=>flyRow(v, centerById[v.center].city)).join("");
+  bindRows(box, city=>{
     box.hidden=true;
-    openFly(b.dataset.city,true);
-  }));
+    openFly(city,true);
+  });
 }
 $("q").addEventListener("input",()=>{ closeFly(); renderSuggest(); });
 $("close").addEventListener("click",()=>{ $("sheet").hidden=true; selected=null; scope=null; });
 $("fly").addEventListener("pointerenter",()=>clearTimeout(flyTimer));
 $("fly").addEventListener("pointerleave",scheduleFlyClose);
+$("navbtn").addEventListener("click",()=>setMenu(true));
+$("railx").addEventListener("click",()=>setMenu(false));
+$("gestion-toggle").addEventListener("click",()=>{
+  const list=$("gestion-list");
+  const willOpen=list.hidden;
+  list.hidden=!willOpen;
+  $("gestion-toggle").setAttribute("aria-expanded", willOpen?"true":"false");
+  if(window.matchMedia("(max-width:700px)").matches){
+    layoutMap();
+    if(flyCity){ placeFly(); setRoads(flyCity); }
+  }
+});
 document.addEventListener("click",e=>{
   if(!e.target.closest(".search")) $("suggest").hidden=true;
-  if(e.target.closest("#fly")||e.target.closest(".hot")||e.target.closest(".search")) return;
+  if(e.target.closest("#fly")||e.target.closest(".hot")||e.target.closest(".search")||e.target.closest("#toast")) return;
   closeFly();
 });
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape"){ $("suggest").hidden=true; closeFly(); $("close").click(); }
 });
+renderGestion();
 drawCities();
 layoutMap();
-paintGlow();
-$("basemap").addEventListener("load", paintGlow);
+document.querySelector(".brand img").addEventListener("load",()=>{ layoutMap(); if(flyCity) placeFly(); });
 requestAnimationFrame(()=>{ const roads=$("roads"); if(!roads.getAttribute("src")) roads.src="carte-alsace-routes.webp"; });
 window.addEventListener("resize",()=>{ layoutMap(); if(flyCity){ placeFly(); setRoads(flyCity); } });
 </script>
