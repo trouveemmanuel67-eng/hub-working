@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Flotte Strasbourg Sales</title>
+<title>FLEET MAP</title>
 <style>
+@font-face{font-family:Knewave;src:url("fonts/Knewave-Regular.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
 *{box-sizing:border-box}
 html,body{margin:0;height:100vh;overflow:hidden;background:#1a1817;color:#fff;font-family:Inter,"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:400}
 button,input{font:inherit;color:inherit}
@@ -13,12 +14,29 @@ button{cursor:pointer;background:none;border:0}
 .mapstage{position:absolute;inset:0;overflow:hidden;background:#1a1817}
 .mapcover{position:absolute;top:0;left:0}
 .mapcover img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;filter:none;opacity:1;display:block}
-#hots{position:absolute;inset:0;pointer-events:none}
+#hots{position:absolute;inset:0;pointer-events:none;z-index:2}
 .hot{position:absolute;z-index:2;background:transparent;padding:0;cursor:pointer;pointer-events:auto;overflow:visible}
-.shine{position:absolute;inset:0;overflow:hidden;pointer-events:none;transform-origin:var(--ox) var(--oy);transition:transform 180ms ease,filter 180ms ease}
-.shine canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-.hot:hover .shine,.hot.on .shine{transform:scale(1.12);filter:brightness(1.25) drop-shadow(0 0 6px rgba(255,255,255,.7)) drop-shadow(0 0 14px rgba(255,255,255,.35))}
-.fly{position:fixed;z-index:15;width:min(320px,calc(100vw - 16px));overflow:auto;background:#0e0e10;border:1px solid #3a3a3c;border-radius:16px;box-shadow:0 18px 44px rgba(0,0,0,.5);padding:10px 10px 6px}
+.zoom{position:absolute;pointer-events:none;transform-origin:var(--ox) var(--oy);transition:transform 180ms ease}
+.zoom canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.zoom .cover{
+  opacity:0;
+  -webkit-mask-image:radial-gradient(circle at var(--ox) var(--oy), #fff var(--mask-in), transparent var(--mask-out));
+  mask-image:radial-gradient(circle at var(--ox) var(--oy), #fff var(--mask-in), transparent var(--mask-out));
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat
+}
+.hot:hover .cover,.hot.on .cover{opacity:1}
+.hot:hover .zoom,.hot.on .zoom{transform:scale(1.12)}
+.zoom .glow{transition:filter 180ms ease}
+.hot:hover .glow,.hot.on .glow{filter:brightness(1.16) drop-shadow(0 0 2px rgba(255,255,255,.82)) drop-shadow(0 0 5px rgba(255,255,255,.28))}
+.mapcover img.roads{
+  z-index:1;pointer-events:none;opacity:0;transition:opacity 250ms ease;
+  --rx:50%;--ry:30%;--rr:180px;
+  -webkit-mask-image:radial-gradient(circle var(--rr) at var(--rx) var(--ry), #fff 0%, transparent 100%);
+  mask-image:radial-gradient(circle var(--rr) at var(--rx) var(--ry), #fff 0%, transparent 100%);
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat
+}
+.mapcover img.roads.on{opacity:.55}
+.fly{position:fixed;z-index:18;width:min(320px,calc(100vw - 16px));overflow:auto;background:#0e0e10;border:1px solid #3a3a3c;border-radius:16px;box-shadow:0 18px 44px rgba(0,0,0,.5);padding:10px 10px 6px}
 .fly[hidden]{display:none}
 .fly-title{margin:2px 6px 8px;font-size:15px;font-weight:600}
 .fly .site{margin:10px 6px 6px}
@@ -32,12 +50,20 @@ button{cursor:pointer;background:none;border:0}
 .fly-here{margin-top:4px;display:flex;align-items:center;gap:6px;font-size:12px}
 .here{width:8px;height:8px;border-radius:50%;background:#8e8e93;flex:0 0 auto}
 .here.on{background:#3dd68c}
-.topbar{position:absolute;z-index:6;top:10px;left:12px;right:12px;display:flex;align-items:center;gap:10px;pointer-events:none}
+.topbar{position:absolute;z-index:8;top:8px;left:14px;right:14px;height:46px;display:flex;align-items:center;justify-content:space-between;gap:12px;pointer-events:none;overflow:visible}
 .topbar>*{pointer-events:auto}
+.topbar .brand{position:relative;margin:0;flex:0 1 auto;min-width:0;color:#f7f4ef;font-family:Knewave,"Arial Black","Helvetica Neue",Arial,sans-serif;font-size:30px;font-weight:400;line-height:1;letter-spacing:.01em;text-transform:uppercase;white-space:nowrap;pointer-events:none;transform:translateY(7px) rotate(-8deg);transform-origin:left center;
+  text-shadow:0 1px 0 rgba(0,0,0,.95),1px 0 0 rgba(0,0,0,.8),-1px 0 0 rgba(0,0,0,.8),0 -1px 0 rgba(0,0,0,.8),0 2px 6px rgba(0,0,0,.65),0 0 8px rgba(255,255,255,.28)}
+.brand .drips{position:absolute;left:0;top:78%;width:100%;height:14px;overflow:visible;opacity:.7;pointer-events:none}
+.search{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:7;display:flex;align-items:center;gap:4px;width:108px;background:rgba(12,12,14,.72);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:8px 10px;backdrop-filter:blur(12px)}
 .iconbtn{width:40px;height:40px;flex:0 0 auto;display:grid;place-items:center;color:#f2f2f2;border-radius:50%;background:rgba(12,12,14,.72);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(12px)}
 .avatar{width:40px;height:40px;flex:0 0 auto;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(12,12,14,.72);display:grid;place-items:center;backdrop-filter:blur(12px)}
 .avatar span{font-size:11px;letter-spacing:.04em;color:#d1d1d6}
-.search{position:absolute;left:50%;transform:translateX(-50%);z-index:7;display:flex;align-items:center;gap:4px;width:108px;background:rgba(12,12,14,.72);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:8px 10px;backdrop-filter:blur(12px)}
+.tools{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+@media (max-width:720px){
+  .topbar .brand{font-size:22px}
+  .topbar{top:6px;left:10px;right:10px}
+}
 .search input{width:4.8ch;border:0;outline:none;background:transparent;font-size:16px;letter-spacing:.06em;font-variant-numeric:tabular-nums}
 .search input::placeholder{color:rgba(255,255,255,.5);letter-spacing:.08em}
 .suggest{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);width:min(320px,calc(100vw - 16px));max-height:min(420px,62vh);overflow:auto;background:#0e0e10;border:1px solid #3a3a3c;border-radius:16px;box-shadow:0 18px 44px rgba(0,0,0,.5);padding:8px}
@@ -74,19 +100,28 @@ button{cursor:pointer;background:none;border:0}
 <div class="screen">
   <div class="mapstage" id="mapstage">
     <div class="mapcover" id="mapcover">
-      <img id="basemap" src="carte-alsace-villes.png" alt="Carte de l'Alsace">
+      <img id="basemap" src="carte-alsace-villes-ronds.png" alt="Carte de l'Alsace">
+      <img id="roads" class="roads" alt="" decoding="async">
       <div id="hots"></div>
     </div>
   </div>
   <div class="topbar">
-    <button type="button" class="iconbtn" aria-label="Messages">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 6.5h14v9H8l-3 2.5z" stroke-linejoin="round"/></svg>
-    </button>
+    <h1 class="brand">FLEET MAP
+      <svg class="drips" viewBox="0 0 220 16" aria-hidden="true">
+        <path d="M46 1c.6 4 .2 7-.4 10-.4 2 .6 3.2 0 5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        <path d="M156 2c.8 3.5.3 6.5-.2 9" fill="none" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/>
+      </svg>
+    </h1>
     <label class="search"><span aria-hidden="true">⌕</span>
       <input id="q" type="text" inputmode="numeric" maxlength="4" placeholder="VIN" autocomplete="off" aria-label="Rechercher un VIN">
       <div class="suggest" id="suggest" hidden></div>
     </label>
-    <button type="button" class="avatar" aria-label="Profil"><span>ES</span></button>
+    <div class="tools">
+      <button type="button" class="iconbtn" aria-label="Messages">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 6.5h14v9H8l-3 2.5z" stroke-linejoin="round"/></svg>
+      </button>
+      <button type="button" class="avatar" aria-label="Profil"><span>ES</span></button>
+    </div>
   </div>
 </div>
 <div class="fly" id="fly" hidden></div>
@@ -189,11 +224,11 @@ function visible(v){return hit(v)&&inScope(v)}
 
 /* Zones sur le rond ET le nom. cx/cy : centre du rond, en % de l'image 7912×6781. */
 const HOTS=[
-  {city:"Sarrebourg", left:23.16, top:12.04, width:12.55, height:5.74, cx:24.46, cy:16.17},
-  {city:"Saverne", left:42.57, top:13.13, width:9.42, height:5.33, cx:43.87, cy:16.86},
-  {city:"Roppenheim", left:72.02, top:12.57, width:10.76, height:5.77, cx:81.50, cy:16.70},
-  {city:"Strasbourg", left:57.89, top:32.24, width:9.95, height:5.54, cx:61.82, cy:33.87},
-  {city:"Sélestat", left:35.75, top:58.52, width:7.17, height:4.77, cx:41.84, cy:59.73}
+  {city:"Sarrebourg", left:23.16, top:12.04, width:12.55, height:5.74, cx:24.46, cy:16.17, nameBottom:14.305, markBottom:17.112},
+  {city:"Saverne", left:42.57, top:13.13, width:9.42, height:5.33, cx:43.87, cy:16.86, nameBottom:15.396, markBottom:17.845},
+  {city:"Roppenheim", left:72.02, top:12.57, width:10.76, height:5.77, cx:81.50, cy:16.70, nameBottom:14.791, markBottom:17.663},
+  {city:"Strasbourg", left:57.89, top:32.24, width:9.95, height:5.54, cx:61.82, cy:33.87, nameBottom:37.443, markBottom:34.825},
+  {city:"Sélestat", left:35.75, top:58.52, width:7.17, height:4.77, cx:41.84, cy:59.73, nameBottom:62.941, markBottom:60.457}
 ];
 const IMG_W=7912, IMG_H=6781;
 const Y_SAR=0.1617, Y_SEL=0.5973;
@@ -203,6 +238,20 @@ const MID_X=(0.2446+0.8150)/2;
 const ALL_X0=0.2316, ALL_X1=0.8278;
 const MUST_X0=0.2316, MUST_X1=0.6784;
 let flyCity=null, flySticky=false, flyTimer=null;
+function visualFor(h){
+  const cx=h.cx/100*IMG_W, cy=h.cy/100*IMG_H;
+  const l=h.left/100*IMG_W, t=h.top/100*IMG_H;
+  const r=(h.left+h.width)/100*IMG_W, b=(h.top+h.height)/100*IMG_H;
+  const contentR=Math.max(Math.hypot(l-cx,t-cy),Math.hypot(r-cx,t-cy),Math.hypot(l-cx,b-cy),Math.hypot(r-cx,b-cy));
+  const fade=Math.max(120, contentR*0.42);
+  const R=contentR+fade;
+  const far=R*Math.SQRT2;
+  return {
+    left:(cx-R)/IMG_W*100, top:(cy-R)/IMG_H*100,
+    width:2*R/IMG_W*100, height:2*R/IMG_H*100,
+    maskIn:contentR/far*100, maskOut:R/far*100
+  };
+}
 function drawCities(){
   const g=$("hots");
   g.innerHTML="";
@@ -216,14 +265,26 @@ function drawCities(){
     b.style.height=h.height+"%";
     b.setAttribute("aria-label",h.city);
     const ox=(h.cx-h.left)/h.width*100, oy=(h.cy-h.top)/h.height*100;
-    b.style.setProperty("--ox", ox+"%");
-    b.style.setProperty("--oy", oy+"%");
     b.dataset.ox=String(ox);
     b.dataset.oy=String(oy);
-    const shine=document.createElement("span");
-    shine.className="shine";
-    shine.append(document.createElement("canvas"));
-    b.append(shine);
+    const vis=visualFor(h);
+    const zoom=document.createElement("span");
+    zoom.className="zoom";
+    zoom.style.left=((vis.left-h.left)/h.width*100)+"%";
+    zoom.style.top=((vis.top-h.top)/h.height*100)+"%";
+    zoom.style.width=(vis.width/h.width*100)+"%";
+    zoom.style.height=(vis.height/h.height*100)+"%";
+    const zox=(h.cx-vis.left)/vis.width*100, zoy=(h.cy-vis.top)/vis.height*100;
+    zoom.style.setProperty("--ox", zox+"%");
+    zoom.style.setProperty("--oy", zoy+"%");
+    zoom.style.setProperty("--mask-in", vis.maskIn.toFixed(2)+"%");
+    zoom.style.setProperty("--mask-out", vis.maskOut.toFixed(2)+"%");
+    const cover=document.createElement("canvas");
+    cover.className="cover";
+    const glow=document.createElement("canvas");
+    glow.className="glow";
+    zoom.append(cover, glow);
+    b.append(zoom);
     b.addEventListener("pointerenter",()=>{
       if(flySticky && flyCity!==h.city) return;
       openFly(h.city,false);
@@ -272,25 +333,50 @@ function grownBox(btn){
     midX:oxp
   };
 }
+function anchorLow(btn){
+  const h=HOTS.find(x=>x.city===btn.getAttribute("aria-label"));
+  const cover=$("mapcover").getBoundingClientRect();
+  const oy=cover.top+h.cy/100*cover.height;
+  const y=cover.top+Math.max(h.nameBottom,h.markBottom)/100*cover.height;
+  return oy+(y-oy)*1.12;
+}
 function placeFly(){
   const btn=[...document.querySelectorAll(".hot")].find(b=>b.getAttribute("aria-label")===flyCity);
   const fly=$("fly");
   if(!btn||fly.hidden) return;
   const g=grownBox(btn);
+  const low=anchorLow(btn);
   const gap=8, pad=8;
-  const below=window.innerHeight-pad-(g.bottom+gap);
+  const below=window.innerHeight-pad-(low+gap);
   const above=g.top-gap-pad;
   const useBelow=below>=150||below>=above;
   fly.style.maxHeight=Math.max(120, Math.min(480, useBelow?below:above))+"px";
   fly.style.left="0px";
   fly.style.top="0px";
   const w=fly.offsetWidth, h=fly.offsetHeight;
-  let top=useBelow?g.bottom+gap:Math.max(pad, g.top-gap-h);
+  let top=useBelow?low+gap:Math.max(pad, g.top-gap-h);
   if(top+h>window.innerHeight-pad) top=Math.max(pad, window.innerHeight-pad-h);
   let left=g.midX-w/2;
   left=Math.min(Math.max(pad,left), window.innerWidth-pad-w);
   fly.style.left=left+"px";
   fly.style.top=top+"px";
+}
+function roadRadius(){
+  const map=$("mapcover").getBoundingClientRect();
+  const view=$("mapstage").getBoundingClientRect();
+  const left=Math.max(map.left, view.left);
+  const right=Math.min(map.right, view.right);
+  return Math.max(80, (right-left)*0.135);
+}
+function setRoads(city){
+  const el=$("roads");
+  if(!city){ el.classList.remove("on"); return; }
+  const h=HOTS.find(x=>x.city===city);
+  if(!h){ el.classList.remove("on"); return; }
+  el.style.setProperty("--rx", h.cx+"%");
+  el.style.setProperty("--ry", h.cy+"%");
+  el.style.setProperty("--rr", roadRadius().toFixed(1)+"px");
+  el.classList.add("on");
 }
 function markHot(){
   document.querySelectorAll(".hot").forEach(b=>b.classList.toggle("on", b.getAttribute("aria-label")===flyCity));
@@ -303,6 +389,7 @@ function openFly(city,sticky){
   renderFly();
   $("fly").hidden=false;
   placeFly();
+  setRoads(city);
 }
 function closeFly(){
   clearTimeout(flyTimer);
@@ -310,6 +397,7 @@ function closeFly(){
   flyCity=null;
   $("fly").hidden=true;
   markHot();
+  setRoads(null);
 }
 function layoutMap(){
   const stage=$("mapstage");
@@ -349,15 +437,23 @@ function layoutMap(){
 function paintGlow(){
   const src=$("basemap");
   if(!src.naturalWidth) return;
+  const nw=src.naturalWidth, nh=src.naturalHeight;
   document.querySelectorAll(".hot").forEach(b=>{
-    const canvas=b.querySelector("canvas");
-    const left=parseFloat(b.style.left), top=parseFloat(b.style.top);
-    const width=parseFloat(b.style.width), height=parseFloat(b.style.height);
-    const sx=left/100*src.naturalWidth, sy=top/100*src.naturalHeight;
-    const sw=width/100*src.naturalWidth, sh=height/100*src.naturalHeight;
+    const zoom=b.querySelector(".zoom");
+    const cover=zoom.querySelector(".cover");
+    const glow=zoom.querySelector(".glow");
+    const bl=parseFloat(b.style.left), bt=parseFloat(b.style.top);
+    const bw=parseFloat(b.style.width), bh=parseFloat(b.style.height);
+    const left=bl+parseFloat(zoom.style.left)/100*bw;
+    const top=bt+parseFloat(zoom.style.top)/100*bh;
+    const width=parseFloat(zoom.style.width)/100*bw;
+    const height=parseFloat(zoom.style.height)/100*bh;
+    const sx=left/100*nw, sy=top/100*nh, sw=width/100*nw, sh=height/100*nh;
     const dw=Math.max(1, Math.round(sw)), dh=Math.max(1, Math.round(sh));
-    canvas.width=dw; canvas.height=dh;
-    const ctx=canvas.getContext("2d",{willReadFrequently:true});
+    cover.width=dw; cover.height=dh;
+    glow.width=dw; glow.height=dh;
+    cover.getContext("2d").drawImage(src, sx, sy, sw, sh, 0, 0, dw, dh);
+    const ctx=glow.getContext("2d",{willReadFrequently:true});
     ctx.drawImage(src, sx, sy, sw, sh, 0, 0, dw, dh);
     const image=ctx.getImageData(0,0,dw,dh);
     const d=image.data;
@@ -465,7 +561,8 @@ drawCities();
 layoutMap();
 paintGlow();
 $("basemap").addEventListener("load", paintGlow);
-window.addEventListener("resize",()=>{ layoutMap(); if(flyCity) placeFly(); });
+requestAnimationFrame(()=>{ const roads=$("roads"); if(!roads.getAttribute("src")) roads.src="carte-alsace-routes.webp"; });
+window.addEventListener("resize",()=>{ layoutMap(); if(flyCity){ placeFly(); setRoads(flyCity); } });
 </script>
 </body>
 </html>
