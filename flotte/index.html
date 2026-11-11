@@ -4,8 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FLEET MAP</title>
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="favicon-16.png" sizes="16x16" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:title" content="FLEET MAP">
+<meta property="og:image" content="https://trouveemmanuel67-eng.github.io/hub-working/flotte/logo-fleet-map-header.webp">
+<meta property="og:image:type" content="image/webp">
+<meta property="og:image:width" content="420">
+<meta property="og:image:height" content="383">
 <style>
-@font-face{font-family:Knewave;src:url("fonts/Knewave-Regular.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
 *{box-sizing:border-box}
 html,body{margin:0;height:100vh;overflow:hidden;background:#1a1817;color:#fff;font-family:Inter,"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:400}
 button,input{font:inherit;color:inherit}
@@ -16,16 +23,16 @@ button{cursor:pointer;background:none;border:0}
 .mapcover img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;filter:none;opacity:1;display:block}
 #hots{position:absolute;inset:0;pointer-events:none;z-index:2}
 .hot{position:absolute;z-index:2;background:transparent;padding:0;cursor:pointer;pointer-events:auto;overflow:visible}
-.zoom{position:absolute;pointer-events:none;transform-origin:var(--ox) var(--oy);transition:transform 180ms ease}
+.zoom{position:absolute;pointer-events:none;transform-origin:var(--ox) var(--oy);opacity:0;transition:transform 180ms ease,opacity 160ms ease}
 .zoom canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .zoom .cover{
-  opacity:0;
-  -webkit-mask-image:radial-gradient(circle at var(--ox) var(--oy), #fff var(--mask-in), transparent var(--mask-out));
-  mask-image:radial-gradient(circle at var(--ox) var(--oy), #fff var(--mask-in), transparent var(--mask-out));
+  -webkit-mask-image:linear-gradient(to right, transparent var(--eA), #fff var(--e0), #fff var(--e1), transparent var(--eB)), linear-gradient(to bottom, transparent var(--fA), #fff var(--f0), #fff var(--f1), transparent var(--fB));
+  -webkit-mask-composite:source-in;
+  mask-image:linear-gradient(to right, transparent var(--eA), #fff var(--e0), #fff var(--e1), transparent var(--eB)), linear-gradient(to bottom, transparent var(--fA), #fff var(--f0), #fff var(--f1), transparent var(--fB));
+  mask-composite:intersect;
   -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat
 }
-.hot:hover .cover,.hot.on .cover{opacity:1}
-.hot:hover .zoom,.hot.on .zoom{transform:scale(1.12)}
+.hot:hover .zoom,.hot.on .zoom{opacity:1;transform:scale(1.08);transition:transform 180ms ease,opacity 0s}
 .zoom .glow{transition:filter 180ms ease}
 .hot:hover .glow,.hot.on .glow{filter:brightness(1.16) drop-shadow(0 0 2px rgba(255,255,255,.82)) drop-shadow(0 0 5px rgba(255,255,255,.28))}
 .mapcover img.roads{
@@ -35,7 +42,7 @@ button{cursor:pointer;background:none;border:0}
   mask-image:radial-gradient(circle var(--rr) at var(--rx) var(--ry), #fff 0%, transparent 100%);
   -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat
 }
-.mapcover img.roads.on{opacity:.55}
+.mapcover img.roads.on{opacity:.88}
 .fly{position:fixed;z-index:18;width:min(320px,calc(100vw - 16px));overflow:auto;background:#0e0e10;border:1px solid #3a3a3c;border-radius:16px;box-shadow:0 18px 44px rgba(0,0,0,.5);padding:10px 10px 6px}
 .fly[hidden]{display:none}
 .fly-title{margin:2px 6px 8px;font-size:15px;font-weight:600}
@@ -52,16 +59,15 @@ button{cursor:pointer;background:none;border:0}
 .here.on{background:#3dd68c}
 .topbar{position:absolute;z-index:8;top:8px;left:14px;right:14px;height:46px;display:flex;align-items:center;justify-content:space-between;gap:12px;pointer-events:none;overflow:visible}
 .topbar>*{pointer-events:auto}
-.topbar .brand{position:relative;margin:0;flex:0 1 auto;min-width:0;color:#f7f4ef;font-family:Knewave,"Arial Black","Helvetica Neue",Arial,sans-serif;font-size:30px;font-weight:400;line-height:1;letter-spacing:.01em;text-transform:uppercase;white-space:nowrap;pointer-events:none;transform:translateY(7px) rotate(-8deg);transform-origin:left center;
-  text-shadow:0 1px 0 rgba(0,0,0,.95),1px 0 0 rgba(0,0,0,.8),-1px 0 0 rgba(0,0,0,.8),0 -1px 0 rgba(0,0,0,.8),0 2px 6px rgba(0,0,0,.65),0 0 8px rgba(255,255,255,.28)}
-.brand .drips{position:absolute;left:0;top:78%;width:100%;height:14px;overflow:visible;opacity:.7;pointer-events:none}
+.brand{margin:0;line-height:0;pointer-events:none;flex:0 1 auto}
+.brand img{display:block;width:112px;height:auto;filter:drop-shadow(0 2px 5px rgba(0,0,0,.7))}
 .search{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:7;display:flex;align-items:center;gap:4px;width:108px;background:rgba(12,12,14,.72);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:8px 10px;backdrop-filter:blur(12px)}
 .iconbtn{width:40px;height:40px;flex:0 0 auto;display:grid;place-items:center;color:#f2f2f2;border-radius:50%;background:rgba(12,12,14,.72);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(12px)}
 .avatar{width:40px;height:40px;flex:0 0 auto;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(12,12,14,.72);display:grid;place-items:center;backdrop-filter:blur(12px)}
 .avatar span{font-size:11px;letter-spacing:.04em;color:#d1d1d6}
 .tools{display:flex;align-items:center;gap:10px;flex:0 0 auto}
 @media (max-width:720px){
-  .topbar .brand{font-size:22px}
+  .brand img{width:84px}
   .topbar{top:6px;left:10px;right:10px}
 }
 .search input{width:4.8ch;border:0;outline:none;background:transparent;font-size:16px;letter-spacing:.06em;font-variant-numeric:tabular-nums}
@@ -106,12 +112,7 @@ button{cursor:pointer;background:none;border:0}
     </div>
   </div>
   <div class="topbar">
-    <h1 class="brand">FLEET MAP
-      <svg class="drips" viewBox="0 0 220 16" aria-hidden="true">
-        <path d="M46 1c.6 4 .2 7-.4 10-.4 2 .6 3.2 0 5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-        <path d="M156 2c.8 3.5.3 6.5-.2 9" fill="none" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/>
-      </svg>
-    </h1>
+    <h1 class="brand" aria-label="FLEET MAP"><img src="logo-fleet-map-header.webp" alt="FLEET MAP" width="420" height="383"></h1>
     <label class="search"><span aria-hidden="true">⌕</span>
       <input id="q" type="text" inputmode="numeric" maxlength="4" placeholder="VIN" autocomplete="off" aria-label="Rechercher un VIN">
       <div class="suggest" id="suggest" hidden></div>
@@ -222,13 +223,14 @@ function inScope(v){
 }
 function visible(v){return hit(v)&&inScope(v)}
 
-/* Zones sur le rond ET le nom. cx/cy : centre du rond, en % de l'image 7912×6781. */
+/* Boîtes mesurées sur les pixels clairs (luminance > 150) de la carte dérivée, hors disque. */
+const SCALE=1.08;
 const HOTS=[
-  {city:"Sarrebourg", left:23.16, top:12.04, width:12.55, height:5.74, cx:24.46, cy:16.17, nameBottom:14.305, markBottom:17.112},
-  {city:"Saverne", left:42.57, top:13.13, width:9.42, height:5.33, cx:43.87, cy:16.86, nameBottom:15.396, markBottom:17.845},
-  {city:"Roppenheim", left:72.02, top:12.57, width:10.76, height:5.77, cx:81.50, cy:16.70, nameBottom:14.791, markBottom:17.663},
-  {city:"Strasbourg", left:57.89, top:32.24, width:9.95, height:5.54, cx:61.82, cy:33.87, nameBottom:37.443, markBottom:34.825},
-  {city:"Sélestat", left:35.75, top:58.52, width:7.17, height:4.77, cx:41.84, cy:59.73, nameBottom:62.941, markBottom:60.457}
+  {city:"Sarrebourg", left:23.25, top:12.10, width:12.35, height:5.50, cx:24.46, cy:16.17, nameBottom:14.305, markBottom:17.112, ncx:30.612, ncy:13.339, nx0:25.796, ny0:12.314, nx1:35.428, ny1:14.364, cr:82},
+  {city:"Saverne", left:42.40, top:13.20, width:9.40, height:5.40, cx:43.87, cy:16.86, nameBottom:15.396, markBottom:17.845, ncx:48.528, ncy:14.430, nx0:45.362, ny0:13.405, nx1:51.694, ny1:15.455, cr:82},
+  {city:"Roppenheim", left:72.20, top:12.70, width:10.55, height:5.45, cx:81.50, cy:16.70, nameBottom:14.836, markBottom:17.663, ncx:76.896, ncy:13.870, nx0:72.307, ny0:12.845, nx1:81.484, ny1:14.895, cr:82},
+  {city:"Strasbourg", left:57.70, top:32.10, width:10.10, height:5.80, cx:61.82, cy:33.87, nameBottom:37.443, markBottom:34.825, ncx:62.873, ncy:36.506, nx0:58.177, ny0:35.511, nx1:67.569, ny1:37.502, cr:82},
+  {city:"Sélestat", left:35.70, top:58.40, width:7.20, height:5.00, cx:41.84, cy:59.73, nameBottom:62.955, markBottom:60.457, ncx:39.333, ncy:61.989, nx0:36.022, ny0:60.964, nx1:42.644, ny1:63.014, cr:64}
 ];
 const IMG_W=7912, IMG_H=6781;
 const Y_SAR=0.1617, Y_SEL=0.5973;
@@ -239,17 +241,27 @@ const ALL_X0=0.2316, ALL_X1=0.8278;
 const MUST_X0=0.2316, MUST_X1=0.6784;
 let flyCity=null, flySticky=false, flyTimer=null;
 function visualFor(h){
-  const cx=h.cx/100*IMG_W, cy=h.cy/100*IMG_H;
-  const l=h.left/100*IMG_W, t=h.top/100*IMG_H;
-  const r=(h.left+h.width)/100*IMG_W, b=(h.top+h.height)/100*IMG_H;
-  const contentR=Math.max(Math.hypot(l-cx,t-cy),Math.hypot(r-cx,t-cy),Math.hypot(l-cx,b-cy),Math.hypot(r-cx,b-cy));
-  const fade=Math.max(120, contentR*0.42);
+  const ox=h.ncx/100*IMG_W, oy=h.ncy/100*IMG_H;
+  const x0=h.nx0/100*IMG_W, y0=h.ny0/100*IMG_H, x1=h.nx1/100*IMG_W, y1=h.ny1/100*IMG_H;
+  const cx=h.cx/100*IMG_W, cy=h.cy/100*IMG_H, cr=h.cr;
+  const boxL=Math.min(x0, cx-cr), boxT=Math.min(y0, cy-cr);
+  const boxR=Math.max(x1, cx+cr), boxB=Math.max(y1, cy+cr);
+  const pts=[[boxL,boxT],[boxR,boxT],[boxL,boxB],[boxR,boxB]];
+  let contentR=1;
+  for(const [x,y] of pts) contentR=Math.max(contentR, Math.hypot(x-ox, y-oy));
+  const fade=56;
   const R=contentR+fade;
-  const far=R*Math.SQRT2;
+  const left=ox-R, top=oy-R, size=2*R;
+  const pct=v=>v/size*100;
   return {
-    left:(cx-R)/IMG_W*100, top:(cy-R)/IMG_H*100,
-    width:2*R/IMG_W*100, height:2*R/IMG_H*100,
-    maskIn:contentR/far*100, maskOut:R/far*100
+    left:left/IMG_W*100, top:top/IMG_H*100,
+    width:size/IMG_W*100, height:size/IMG_H*100,
+    eA:Math.max(0, pct(boxL-left)-pct(fade)),
+    e0:pct(boxL-left), e1:pct(boxR-left),
+    eB:Math.min(100, pct(boxR-left)+pct(fade)),
+    fA:Math.max(0, pct(boxT-top)-pct(fade)),
+    f0:pct(boxT-top), f1:pct(boxB-top),
+    fB:Math.min(100, pct(boxB-top)+pct(fade))
   };
 }
 function drawCities(){
@@ -274,11 +286,10 @@ function drawCities(){
     zoom.style.top=((vis.top-h.top)/h.height*100)+"%";
     zoom.style.width=(vis.width/h.width*100)+"%";
     zoom.style.height=(vis.height/h.height*100)+"%";
-    const zox=(h.cx-vis.left)/vis.width*100, zoy=(h.cy-vis.top)/vis.height*100;
+    const zox=(h.ncx-vis.left)/vis.width*100, zoy=(h.ncy-vis.top)/vis.height*100;
     zoom.style.setProperty("--ox", zox+"%");
     zoom.style.setProperty("--oy", zoy+"%");
-    zoom.style.setProperty("--mask-in", vis.maskIn.toFixed(2)+"%");
-    zoom.style.setProperty("--mask-out", vis.maskOut.toFixed(2)+"%");
+    for(const k of ["eA","e0","e1","eB","fA","f0","f1","fB"]) zoom.style.setProperty("--"+k, vis[k].toFixed(2)+"%");
     const cover=document.createElement("canvas");
     cover.className="cover";
     const glow=document.createElement("canvas");
@@ -323,7 +334,7 @@ function renderFly(){
 function grownBox(btn){
   const r=btn.getBoundingClientRect();
   const ox=parseFloat(btn.dataset.ox)/100, oy=parseFloat(btn.dataset.oy)/100;
-  const s=1.12;
+  const s=SCALE;
   const oxp=r.left+ox*r.width, oyp=r.top+oy*r.height;
   return {
     top:oyp-(oyp-r.top)*s,
@@ -336,9 +347,9 @@ function grownBox(btn){
 function anchorLow(btn){
   const h=HOTS.find(x=>x.city===btn.getAttribute("aria-label"));
   const cover=$("mapcover").getBoundingClientRect();
-  const oy=cover.top+h.cy/100*cover.height;
+  const oy=cover.top+h.ncy/100*cover.height;
   const y=cover.top+Math.max(h.nameBottom,h.markBottom)/100*cover.height;
-  return oy+(y-oy)*1.12;
+  return oy+(y-oy)*SCALE;
 }
 function placeFly(){
   const btn=[...document.querySelectorAll(".hot")].find(b=>b.getAttribute("aria-label")===flyCity);
