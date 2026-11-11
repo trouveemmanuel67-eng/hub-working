@@ -279,7 +279,7 @@ a{color:inherit}
       <img id="basemap" src="carte-alsace-villes-ronds.png" alt="Carte de l'Alsace" draggable="false">
       <img id="roads" class="roads" alt="" decoding="async" draggable="false">
       <button type="button" class="super" data-id="phal" style="left:38.907%;top:12.664%" aria-label="Superchargeur Phalsbourg" title="Superchargeur Phalsbourg"><img src="logo-superchargeur.webp" alt="" width="64" height="64" draggable="false"></button>
-      <button type="button" class="super" data-id="rop" style="left:87.169%;top:23.525%" aria-label="Superchargeur Roppenheim" title="Superchargeur Roppenheim"><img src="logo-superchargeur.webp" alt="" width="64" height="64" draggable="false"></button>
+      <button type="button" class="super" data-id="baden" style="left:88.800%;top:22.070%" aria-label="Superchargeur Baden-Baden" title="Superchargeur Baden-Baden"><img src="logo-superchargeur.webp" alt="" width="64" height="64" draggable="false"></button>
       <button type="button" class="super" data-id="die" style="left:14.304%;top:52.915%" aria-label="Superchargeur Saint-Dié-des-Vosges" title="Superchargeur Saint-Dié-des-Vosges"><img src="logo-superchargeur.webp" alt="" width="64" height="64" draggable="false"></button>
       <button type="button" class="super" data-id="herb" style="left:59.884%;top:59.354%" aria-label="Superchargeur Herbolzheim" title="Superchargeur Herbolzheim"><img src="logo-superchargeur.webp" alt="" width="64" height="64" draggable="false"></button>
       <div id="hots"></div>
@@ -333,12 +333,12 @@ const GESTION_KEY="fleet-gestion-active";
 const AR_STRASBOURG = {Sarrebourg:"1 h 35", Saverne:"1 h 10", Roppenheim:"1 h 02", Sélestat:"1 h 33"};
 /* Temps OSRM aller simple, sans trafic, arrondis à la minute.
    Phalsbourg : 20 rue de Strasbourg, 48.77279, 7.24324 → Sarrebourg 14,9 min.
-   Roppenheim : repère A5, Superchargeur Cité Baden-Baden, 48.78348, 8.19231 → Roppenheim 16,8 min.
+   Baden-Baden : Cité Tesla Supercharger, Gewerbepark Cité 7, 76532 Baden-Baden, 48.78348, 8.19231 → Roppenheim 16,8 min.
    Saint-Dié-des-Vosges : 16 rue Émile Durkheim, 48.29340, 6.93650 → Sélestat 48,6 min.
    Herbolzheim : Breisgauallee 2-4, 48.22702, 7.75368 → Sélestat 38,5 min. */
 const SUPERCHARGERS=[
   {id:"phal", name:"Superchargeur Phalsbourg", min:15, near:"Sarrebourg"},
-  {id:"rop", name:"Superchargeur Roppenheim", min:17, near:"Roppenheim"},
+  {id:"baden", name:"Superchargeur Baden-Baden", min:17, near:"Roppenheim"},
   {id:"die", name:"Superchargeur Saint-Dié-des-Vosges", min:49, near:"Sélestat"},
   {id:"herb", name:"Superchargeur Herbolzheim", min:38, near:"Sélestat"}
 ];
