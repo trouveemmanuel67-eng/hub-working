@@ -134,16 +134,26 @@ a{color:inherit}
 }
 .gestion-toggle[aria-expanded="true"] .chev{transform:rotate(180deg)}
 .gestion-list{display:flex;flex-direction:column;gap:0}
-.sms-item{padding:8px 8px 7px;border-top:1px solid rgba(255,255,255,.28);min-width:0}
-.sms-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.sms-site{font-size:12px;font-weight:600;color:#fff;min-width:0}
+.sms-item{
+  display:flex;align-items:center;gap:4px;min-height:32px;padding:4px 0;
+  border-top:1px solid rgba(255,255,255,.28);min-width:0
+}
+.sms-site{flex:0 0 auto;font-size:12px;font-weight:600;color:#fff;white-space:nowrap}
+.sms-sc{
+  flex:1 1 auto;min-width:0;font-size:9px;line-height:1;letter-spacing:.01em;
+  color:rgba(255,255,255,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
 .sms-copy{
-  flex:0 0 auto;border:1px solid rgba(255,255,255,.4);background:transparent;
-  color:#d1d1d6;font-size:11px;font-weight:600;letter-spacing:.04em;
-  padding:3px 7px;cursor:pointer
+  flex:0 0 auto;margin-left:auto;border:1px solid rgba(255,255,255,.4);background:transparent;
+  color:#d1d1d6;font-size:10px;font-weight:600;letter-spacing:.03em;
+  padding:2px 5px;cursor:pointer
 }
 .sms-copy:hover{color:#fff;border-color:#fff}
-.sms-preview{margin:4px 0 0;font-size:11px;line-height:1.35;color:rgba(255,255,255,.48)}
+.cityrole{
+  position:absolute;z-index:2;pointer-events:none;transform:translate(-50%,1px);
+  font-size:10px;line-height:1;letter-spacing:.12em;white-space:nowrap;
+  color:rgba(255,255,255,.7);text-shadow:0 1px 2px rgba(0,0,0,.85)
+}
 .gestion-list[hidden]{display:none}
 .glink{
   display:flex;align-items:center;justify-content:flex-start;
@@ -338,6 +348,8 @@ a{color:inherit}
       <button type="button" class="super" data-id="baden" style="left:88.800%;top:22.070%" aria-label="Superchargeur Baden-Baden" title="Superchargeur Baden-Baden"><img src="logo-superchargeur.webp" alt="" width="64" height="64" draggable="false"></button>
       <button type="button" class="super" data-id="die" style="left:14.304%;top:52.915%" aria-label="Superchargeur Saint-Dié-des-Vosges" title="Superchargeur Saint-Dié-des-Vosges"><img src="logo-superchargeur.webp" alt="" width="64" height="64" draggable="false"></button>
       <button type="button" class="super" data-id="herb" style="left:59.884%;top:59.354%" aria-label="Superchargeur Herbolzheim" title="Superchargeur Herbolzheim"><img src="logo-superchargeur.webp" alt="" width="64" height="64" draggable="false"></button>
+      <button type="button" class="super" data-id="rei" style="left:61.767%;top:28.873%" aria-label="Superchargeur Reichstett" title="Superchargeur Reichstett"><img src="logo-superchargeur.webp" alt="" width="64" height="64" draggable="false"></button>
+      <button type="button" class="super" data-id="ost" style="left:57.900%;top:39.550%" aria-label="Superchargeur Ostwald" title="Superchargeur Ostwald"><img src="logo-superchargeur.webp" alt="" width="64" height="64" draggable="false"></button>
       <div id="hots"></div>
     </div>
     <div class="fly" id="fly" hidden></div>
@@ -406,14 +418,28 @@ a{color:inherit}
 </aside>
 <script>
 /* SMS des centres d'essai libre-service. Pas d'entrée pour le Store de Strasbourg.
-   {SC} est déjà remplacé : Roppenheim → Baden-Baden, Sarrebourg et Saverne → Phalsbourg, Sélestat → Herbolzheim. */
+   Le texte copié garde les sauts de ligne. {SC} : Roppenheim → Baden-Baden,
+   Sarrebourg et Saverne → Phalsbourg, Sélestat → Herbolzheim. */
+function smsText(sc){
+  return [
+    "Bonjour, c'est l'équipe Tesla.",
+    "",
+    "Voici les consignes de votre essai en libre-service : 5 minutes de prise en main, puis 15 minutes de recharge au Superchargeur de "+sc+".",
+    "",
+    "Indiquez « Superchargeur » dans le navigateur et sélectionnez la station.",
+    "Merci de nous transmettre en réponse à ce SMS les informations suivantes :",
+    "adresse, date de naissance et numéro de permis de conduire.",
+    "",
+    "Excellente expérience !"
+  ].join("\n");
+}
 const SMS_TEMPLATES = {
-  Sarrebourg: { site:"Sarrebourg", sc:"Phalsbourg", text:"Bonjour, c'est l'équipe Tesla. Voici les consignes de votre essai en libre-service : 5 minutes de prise en main, puis 15 minutes de recharge au Superchargeur de Phalsbourg. Indiquez « Superchargeur » dans le navigateur et sélectionnez la station. Merci de nous transmettre en réponse à ce SMS les informations suivantes : adresse, date de naissance et numéro de permis de conduire. Excellente expérience !" },
-  Saverne: { site:"Saverne", sc:"Phalsbourg", text:"Bonjour, c'est l'équipe Tesla. Voici les consignes de votre essai en libre-service : 5 minutes de prise en main, puis 15 minutes de recharge au Superchargeur de Phalsbourg. Indiquez « Superchargeur » dans le navigateur et sélectionnez la station. Merci de nous transmettre en réponse à ce SMS les informations suivantes : adresse, date de naissance et numéro de permis de conduire. Excellente expérience !" },
-  Roppenheim: { site:"Roppenheim", sc:"Baden-Baden", text:"Bonjour, c'est l'équipe Tesla. Voici les consignes de votre essai en libre-service : 5 minutes de prise en main, puis 15 minutes de recharge au Superchargeur de Baden-Baden. Indiquez « Superchargeur » dans le navigateur et sélectionnez la station. Merci de nous transmettre en réponse à ce SMS les informations suivantes : adresse, date de naissance et numéro de permis de conduire. Excellente expérience !" },
-  Sélestat: { site:"Sélestat", sc:"Herbolzheim", text:"Bonjour, c'est l'équipe Tesla. Voici les consignes de votre essai en libre-service : 5 minutes de prise en main, puis 15 minutes de recharge au Superchargeur de Herbolzheim. Indiquez « Superchargeur » dans le navigateur et sélectionnez la station. Merci de nous transmettre en réponse à ce SMS les informations suivantes : adresse, date de naissance et numéro de permis de conduire. Excellente expérience !" }
+  Sarrebourg: { site:"Sarrebourg", sc:"Phalsbourg", text:smsText("Phalsbourg") },
+  Saverne: { site:"Saverne", sc:"Phalsbourg", text:smsText("Phalsbourg") },
+  Roppenheim: { site:"Roppenheim", sc:"Baden-Baden", text:smsText("Baden-Baden") },
+  Sélestat: { site:"Sélestat", sc:"Herbolzheim", text:smsText("Herbolzheim") }
 };
-const LIENS_UTILES_LINKS = {TSS:'', GARAGE:'', REGISTRATION:'', LIVE:'', SMP:''};
+const LIENS_UTILES_LINKS = {TSS:'', GARAGE:'', REGISTRATION:'', LIVE:'', SMP:'', DRO:''};
 const GESTION_LINKS = LIENS_UTILES_LINKS;
 const RELEASE_LINKS = {};
 const SERVICE_LINKS = {};
@@ -429,12 +455,19 @@ const AR_STRASBOURG = {Sarrebourg:"1 h 35", Saverne:"1 h 10", Roppenheim:"1 h 02
    Phalsbourg : 20 rue de Strasbourg, 48.77279, 7.24324 → Sarrebourg 14,9 min.
    Baden-Baden : Cité Tesla Supercharger, Gewerbepark Cité 7, 76532 Baden-Baden, 48.78348, 8.19231 → Roppenheim 16,8 min.
    Saint-Dié-des-Vosges : 16 rue Émile Durkheim, 48.29340, 6.93650 → Sélestat 48,6 min.
-   Herbolzheim : Breisgauallee 2-4, 48.22702, 7.75368 → Sélestat 38,5 min. */
+   Herbolzheim : Breisgauallee 2-4, 48.22702, 7.75368 → Sélestat 38,5 min.
+   Ostwald : Superchargeur Tesla, rue du 23 Novembre, 48.53410, 7.70203
+   (OpenStreetMap, amenity=charging_station, operator=Tesla) → Store Strasbourg 16,7 min.
+   Décalé d'environ 1 % au sud-ouest du point calculé pour dégager le titre STRASBOURG.
+   Reichstett : Shopping Promenade Cœur d'Alsace, 6 boulevard des Enseignes, 48.65302, 7.73186
+   (OpenStreetMap, nœud Vendenheim Supercharger) → Store Strasbourg 7,4 min. */
 const SUPERCHARGERS=[
   {id:"phal", name:"Superchargeur Phalsbourg", min:15, near:"Sarrebourg"},
   {id:"baden", name:"Superchargeur Baden-Baden", min:17, near:"Roppenheim"},
   {id:"die", name:"Superchargeur Saint-Dié-des-Vosges", min:49, near:"Sélestat"},
-  {id:"herb", name:"Superchargeur Herbolzheim", min:38, near:"Sélestat"}
+  {id:"herb", name:"Superchargeur Herbolzheim", min:38, near:"Sélestat"},
+  {id:"ost", name:"Superchargeur Ostwald", min:17, near:"Store Strasbourg"},
+  {id:"rei", name:"Superchargeur Reichstett", min:7, near:"Store Strasbourg"}
 ];
 /* Centres. x et y : position sur la carte principale (viewBox 0 0 1000 720), nord en haut.
    Les deux sites de Strasbourg sont volontairement proches.
@@ -616,6 +649,12 @@ function drawCities(){
     dot.style.left=h.cx+"%";
     dot.style.top=h.cy+"%";
     g.append(dot);
+    const role=document.createElement("span");
+    role.className="cityrole";
+    role.textContent=h.city==="Strasbourg"?"Store":"Libre-service";
+    role.style.left=((h.nx0+h.nx1)/2)+"%";
+    role.style.top=h.ny1+"%";
+    g.append(role);
   }
 }
 function fallbackCopy(text){
@@ -623,9 +662,30 @@ function fallbackCopy(text){
   ta.value=text;
   ta.setAttribute("readonly","");
   ta.style.position="fixed";
-  ta.style.left="-9999px";
+  ta.style.top="0";
+  ta.style.left="0";
+  ta.style.width="2em";
+  ta.style.height="2em";
+  ta.style.padding="0";
+  ta.style.border="none";
+  ta.style.outline="none";
+  ta.style.boxShadow="none";
+  ta.style.background="transparent";
+  ta.style.fontSize="16px";
   document.body.appendChild(ta);
+  const ios=/ipad|iphone|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  if(ios){
+    ta.readOnly=false;
+    ta.contentEditable="true";
+    const range=document.createRange();
+    range.selectNodeContents(ta);
+    const sel=window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+  ta.focus();
   ta.select();
+  ta.setSelectionRange(0, text.length);
   try{ document.execCommand("copy"); }catch(e){}
   ta.remove();
 }
@@ -975,14 +1035,18 @@ function renderHoldList(box, kind, countId){
 }
 function renderSms(){
   const box=$("sms-list");
-  box.innerHTML=Object.values(SMS_TEMPLATES).map(t=>{
-    const preview=t.text.slice(0, 76).trim()+"…";
-    return `<article class="sms-item">
-      <div class="sms-top"><span class="sms-site">${esc(t.site)}</span><button type="button" class="sms-copy copy" data-copy="${escAttr(t.text)}" data-toast="Copié" title="Copier le SMS" aria-label="Copier le SMS ${escAttr(t.site)}">Copier</button></div>
-      <p class="sms-preview">${esc(preview)}</p>
-    </article>`;
-  }).join("");
-  bindRows(box);
+  box.innerHTML=Object.values(SMS_TEMPLATES).map(t=>`<div class="sms-item">
+      <span class="sms-site">${esc(t.site)}</span>
+      <span class="sms-sc" title="${escAttr(t.sc)}">${esc(t.sc)}</span>
+      <button type="button" class="sms-copy" data-site="${escAttr(t.site)}" title="Copier le SMS" aria-label="Copier le SMS ${escAttr(t.site)}">Copier</button>
+    </div>`).join("");
+  box.querySelectorAll(".sms-copy").forEach(b=>b.addEventListener("click",e=>{
+    e.stopPropagation();
+    e.preventDefault();
+    const item=SMS_TEMPLATES[b.dataset.site];
+    if(!item) return;
+    copyText(item.text).then(()=>showToast("Copié"));
+  }));
 }
 function renderGestion(){
   renderLinkList($("liens-list"), LIENS_UTILES_LINKS, liensActive(), selectLien);
