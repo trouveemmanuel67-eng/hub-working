@@ -16,7 +16,7 @@ button{cursor:pointer;background:none;border:0}
 #hots{position:absolute;inset:0;pointer-events:none}
 .hot{position:absolute;z-index:2;background:transparent;padding:0;cursor:pointer;pointer-events:auto;overflow:visible}
 .shine{position:absolute;inset:0;overflow:hidden;pointer-events:none;transform-origin:var(--ox) var(--oy);transition:transform 180ms ease,filter 180ms ease}
-.shine img{position:absolute;max-width:none;filter:none}
+.shine canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .hot:hover .shine,.hot.on .shine{transform:scale(1.12);filter:brightness(1.25) drop-shadow(0 0 6px rgba(255,255,255,.7)) drop-shadow(0 0 14px rgba(255,255,255,.35))}
 .fly{position:fixed;z-index:15;width:min(320px,calc(100vw - 16px));overflow:auto;background:#0e0e10;border:1px solid #3a3a3c;border-radius:16px;box-shadow:0 18px 44px rgba(0,0,0,.5);padding:10px 10px 6px}
 .fly[hidden]{display:none}
@@ -222,10 +222,7 @@ function drawCities(){
     b.dataset.oy=String(oy);
     const shine=document.createElement("span");
     shine.className="shine";
-    const simg=document.createElement("img");
-    simg.src="carte-alsace-villes.png";
-    simg.alt="";
-    shine.append(simg);
+    shine.append(document.createElement("canvas"));
     b.append(shine);
     b.addEventListener("pointerenter",()=>{
       if(flySticky && flyCity!==h.city) return;
@@ -348,12 +345,27 @@ function layoutMap(){
   cover.style.left=left+"px";
   cover.style.top=top+"px";
   cover.style.transform="none";
-  document.querySelectorAll(".shine img").forEach(img=>{
-    const hot=img.closest(".hot");
-    img.style.width=dispW+"px";
-    img.style.height=dispH+"px";
-    img.style.left=(-parseFloat(hot.style.left)/100*dispW)+"px";
-    img.style.top=(-parseFloat(hot.style.top)/100*dispH)+"px";
+}
+function paintGlow(){
+  const src=$("basemap");
+  if(!src.naturalWidth) return;
+  document.querySelectorAll(".hot").forEach(b=>{
+    const canvas=b.querySelector("canvas");
+    const left=parseFloat(b.style.left), top=parseFloat(b.style.top);
+    const width=parseFloat(b.style.width), height=parseFloat(b.style.height);
+    const sx=left/100*src.naturalWidth, sy=top/100*src.naturalHeight;
+    const sw=width/100*src.naturalWidth, sh=height/100*src.naturalHeight;
+    const dw=Math.max(1, Math.round(sw)), dh=Math.max(1, Math.round(sh));
+    canvas.width=dw; canvas.height=dh;
+    const ctx=canvas.getContext("2d",{willReadFrequently:true});
+    ctx.drawImage(src, sx, sy, sw, sh, 0, 0, dw, dh);
+    const image=ctx.getImageData(0,0,dw,dh);
+    const d=image.data;
+    for(let i=0;i<d.length;i+=4){
+      const y=0.2126*d[i]+0.7152*d[i+1]+0.0722*d[i+2];
+      d[i+3]=y>=230?255:y>180?Math.round((y-180)/50*255):0;
+    }
+    ctx.putImageData(image,0,0);
   });
 }
 function scheduleFlyClose(){
@@ -451,6 +463,8 @@ document.addEventListener("keydown",e=>{
 });
 drawCities();
 layoutMap();
+paintGlow();
+$("basemap").addEventListener("load", paintGlow);
 window.addEventListener("resize",()=>{ layoutMap(); if(flyCity) placeFly(); });
 </script>
 </body>
