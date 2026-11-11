@@ -95,7 +95,13 @@ a{color:inherit}
 }
 .search:hover{transform:translateX(6px);color:#fff;background:rgba(255,255,255,.06);border-color:#fff}
 .search input{flex:1;width:auto;min-width:0;border:0;outline:none;background:transparent;font-size:16px;letter-spacing:.06em;font-variant-numeric:tabular-nums;color:inherit}
-.search input::placeholder{color:rgba(255,255,255,.45);letter-spacing:.08em}
+.search .ph{
+  position:absolute;left:32px;top:50%;transform:translateY(-50%);
+  display:flex;align-items:baseline;gap:6px;pointer-events:none;
+  color:rgba(255,255,255,.5);font-size:16px;letter-spacing:.06em;white-space:nowrap
+}
+.search .ph .ex{color:rgba(255,255,255,.3);font-size:13px;letter-spacing:.03em}
+.search .ph[hidden]{display:none}
 .suggest{
   position:absolute;top:calc(100% + 8px);left:0;
   width:max-content;max-width:calc(100vw - 36px);
@@ -333,12 +339,13 @@ a{color:inherit}
   <aside class="rail open" id="rail">
     <button type="button" class="rail-x" id="railx" aria-label="Fermer le menu">✕</button>
     <label class="search"><span aria-hidden="true">⌕</span>
-      <input id="q" type="text" inputmode="numeric" maxlength="4" placeholder="VIN" autocomplete="off" aria-label="Rechercher un VIN">
+      <input id="q" type="text" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="Rechercher un VIN">
+      <span class="ph" id="ph">VIN <span class="ex">Ex 327</span></span>
       <div class="suggest" id="suggest" hidden></div>
     </label>
     <div class="rail-body">
     <div class="gestion">
-      <button type="button" class="gestion-toggle" id="liens-toggle" aria-expanded="false" aria-controls="liens-list"><span class="acc-name">LIENS UTILES <span class="acc-count" id="liens-count"></span></span><span class="chev" aria-hidden="true">▾</span></button>
+      <button type="button" class="gestion-toggle" id="liens-toggle" aria-expanded="false" aria-controls="liens-list"><span class="acc-name">LIENS UTILES</span><span class="chev" aria-hidden="true">▾</span></button>
       <div class="gestion-list" id="liens-list" hidden></div>
     </div>
     <div class="gestion">
@@ -945,7 +952,6 @@ function renderHoldList(box, kind, countId){
   bindRows(box);
 }
 function renderGestion(){
-  $("liens-count").textContent="("+Object.keys(LIENS_UTILES_LINKS).length+")";
   renderLinkList($("liens-list"), LIENS_UTILES_LINKS, liensActive(), selectLien);
   const sales=[...RELEASE_STOCK].sort((a,b)=>a.listed<b.listed?-1:1);
   $("release-count").textContent="("+sales.length+")";
@@ -1099,7 +1105,11 @@ function renderSuggest(){
     openFly(city,true);
   });
 }
-$("q").addEventListener("input",()=>{ closeFly(); renderSuggest(); });
+$("q").addEventListener("input",()=>{
+  $("ph").hidden=$("q").value.length>0;
+  closeFly();
+  renderSuggest();
+});
 $("close").addEventListener("click",()=>{ $("sheet").hidden=true; selected=null; scope=null; });
 $("fly").addEventListener("pointerenter",()=>clearTimeout(flyTimer));
 $("fly").addEventListener("pointerleave",scheduleFlyClose);
