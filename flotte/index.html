@@ -30,9 +30,9 @@ a{color:inherit}
 .hot{position:absolute;z-index:2;background:transparent;padding:0;cursor:pointer;pointer-events:auto;overflow:visible}
 .mapcover>img.roads{
   z-index:1;pointer-events:none;opacity:0;transition:opacity 250ms ease;
-  --rx:50%;--ry:30%;--rr:90px;
-  -webkit-mask-image:radial-gradient(circle var(--rr) at var(--rx) var(--ry), #fff 0%, #fff 14%, rgba(255,255,255,.5) 38%, transparent 68%);
-  mask-image:radial-gradient(circle var(--rr) at var(--rx) var(--ry), #fff 0%, #fff 14%, rgba(255,255,255,.5) 38%, transparent 68%);
+  --rx:50%;--ry:30%;--rr:160px;
+  -webkit-mask-image:radial-gradient(circle var(--rr) at var(--rx) var(--ry), #fff 0%, #fff 22%, rgba(255,255,255,.55) 48%, rgba(255,255,255,.16) 74%, transparent 100%);
+  mask-image:radial-gradient(circle var(--rr) at var(--rx) var(--ry), #fff 0%, #fff 22%, rgba(255,255,255,.55) 48%, rgba(255,255,255,.16) 74%, transparent 100%);
   -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat
 }
 .mapcover>img.roads.on{opacity:.88}
@@ -46,7 +46,7 @@ a{color:inherit}
   position:absolute;z-index:2;pointer-events:none;
   width:0.6193%;aspect-ratio:1;transform:translate(-50%,-50%);
   border-radius:50%;background:#fff;box-sizing:content-box;
-  border:1.25px solid #141414
+  border:1.5px solid #000
 }
 .rail{
   position:absolute;z-index:8;
@@ -134,6 +134,16 @@ a{color:inherit}
 }
 .gestion-toggle[aria-expanded="true"] .chev{transform:rotate(180deg)}
 .gestion-list{display:flex;flex-direction:column;gap:0}
+.sms-item{padding:8px 8px 7px;border-top:1px solid rgba(255,255,255,.28);min-width:0}
+.sms-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sms-site{font-size:12px;font-weight:600;color:#fff;min-width:0}
+.sms-copy{
+  flex:0 0 auto;border:1px solid rgba(255,255,255,.4);background:transparent;
+  color:#d1d1d6;font-size:11px;font-weight:600;letter-spacing:.04em;
+  padding:3px 7px;cursor:pointer
+}
+.sms-copy:hover{color:#fff;border-color:#fff}
+.sms-preview{margin:4px 0 0;font-size:11px;line-height:1.35;color:rgba(255,255,255,.48)}
 .gestion-list[hidden]{display:none}
 .glink{
   display:flex;align-items:center;justify-content:flex-start;
@@ -349,6 +359,10 @@ a{color:inherit}
       <div class="gestion-list" id="liens-list" hidden></div>
     </div>
     <div class="gestion">
+      <button type="button" class="gestion-toggle" id="sms-toggle" aria-expanded="false" aria-controls="sms-list"><span class="acc-name">TEMPLATE SMS</span><span class="chev" aria-hidden="true">▾</span></button>
+      <div class="gestion-list" id="sms-list" hidden></div>
+    </div>
+    <div class="gestion">
       <button type="button" class="gestion-toggle" id="indisponible-toggle" aria-expanded="false" aria-controls="indisponible-list"><span class="acc-name">INDISPONIBLE <span class="acc-count" id="indisponible-count"></span></span><span class="chev" aria-hidden="true">▾</span></button>
       <div class="gestion-list" id="indisponible-list" hidden></div>
     </div>
@@ -391,6 +405,14 @@ a{color:inherit}
   <div class="list" id="list"></div>
 </aside>
 <script>
+/* SMS des centres d'essai libre-service. Pas d'entrée pour le Store de Strasbourg.
+   {SC} est déjà remplacé : Roppenheim → Baden-Baden, Sarrebourg et Saverne → Phalsbourg, Sélestat → Herbolzheim. */
+const SMS_TEMPLATES = {
+  Sarrebourg: { site:"Sarrebourg", sc:"Phalsbourg", text:"Bonjour, c'est l'équipe Tesla. Voici les consignes de votre essai en libre-service : 5 minutes de prise en main, puis 15 minutes de recharge au Superchargeur de Phalsbourg. Indiquez « Superchargeur » dans le navigateur et sélectionnez la station. Merci de nous transmettre en réponse à ce SMS les informations suivantes : adresse, date de naissance et numéro de permis de conduire. Excellente expérience !" },
+  Saverne: { site:"Saverne", sc:"Phalsbourg", text:"Bonjour, c'est l'équipe Tesla. Voici les consignes de votre essai en libre-service : 5 minutes de prise en main, puis 15 minutes de recharge au Superchargeur de Phalsbourg. Indiquez « Superchargeur » dans le navigateur et sélectionnez la station. Merci de nous transmettre en réponse à ce SMS les informations suivantes : adresse, date de naissance et numéro de permis de conduire. Excellente expérience !" },
+  Roppenheim: { site:"Roppenheim", sc:"Baden-Baden", text:"Bonjour, c'est l'équipe Tesla. Voici les consignes de votre essai en libre-service : 5 minutes de prise en main, puis 15 minutes de recharge au Superchargeur de Baden-Baden. Indiquez « Superchargeur » dans le navigateur et sélectionnez la station. Merci de nous transmettre en réponse à ce SMS les informations suivantes : adresse, date de naissance et numéro de permis de conduire. Excellente expérience !" },
+  Sélestat: { site:"Sélestat", sc:"Herbolzheim", text:"Bonjour, c'est l'équipe Tesla. Voici les consignes de votre essai en libre-service : 5 minutes de prise en main, puis 15 minutes de recharge au Superchargeur de Herbolzheim. Indiquez « Superchargeur » dans le navigateur et sélectionnez la station. Merci de nous transmettre en réponse à ce SMS les informations suivantes : adresse, date de naissance et numéro de permis de conduire. Excellente expérience !" }
+};
 const LIENS_UTILES_LINKS = {TSS:'', GARAGE:'', REGISTRATION:'', LIVE:'', SMP:''};
 const GESTION_LINKS = LIENS_UTILES_LINKS;
 const RELEASE_LINKS = {};
@@ -745,8 +767,8 @@ function placeFly(){
 function roadRadius(){
   const map=$("mapcover").getBoundingClientRect();
   const scale=map.width/IMG_W||0.22;
-  /* Environ 6 km autour du centre, estompé avant le bord du disque. */
-  return Math.max(52, 420*scale);
+  /* 2,3 fois le disque visible de la PR #50 (bord à 68 % de 420 px image). */
+  return Math.max(120, 660*scale);
 }
 function setRoads(city){
   const el=$("roads");
@@ -951,8 +973,20 @@ function renderHoldList(box, kind, countId){
   box.innerHTML=rows.map(({v,h})=>holdCard(v,h)).join("");
   bindRows(box);
 }
+function renderSms(){
+  const box=$("sms-list");
+  box.innerHTML=Object.values(SMS_TEMPLATES).map(t=>{
+    const preview=t.text.slice(0, 76).trim()+"…";
+    return `<article class="sms-item">
+      <div class="sms-top"><span class="sms-site">${esc(t.site)}</span><button type="button" class="sms-copy copy" data-copy="${escAttr(t.text)}" data-toast="Copié" title="Copier le SMS" aria-label="Copier le SMS ${escAttr(t.site)}">Copier</button></div>
+      <p class="sms-preview">${esc(preview)}</p>
+    </article>`;
+  }).join("");
+  bindRows(box);
+}
 function renderGestion(){
   renderLinkList($("liens-list"), LIENS_UTILES_LINKS, liensActive(), selectLien);
+  renderSms();
   const sales=[...RELEASE_STOCK].sort((a,b)=>a.listed<b.listed?-1:1);
   $("release-count").textContent="("+sales.length+")";
   $("release-list").innerHTML=sales.map(releaseCard).join("");
