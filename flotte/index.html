@@ -6,15 +6,18 @@
 <title>Flotte Strasbourg Sales</title>
 <style>
 *{box-sizing:border-box}
-html,body{margin:0;background:#1a1817;color:#fff;font-family:Inter,"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:400}
+html,body{margin:0;height:100vh;overflow:hidden;background:#1a1817;color:#fff;font-family:Inter,"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:400}
 button,input{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0}
-.screen{position:relative;height:100dvh;overflow:hidden;background:#1a1817}
+.screen{position:relative;height:100vh;overflow:hidden;background:#1a1817}
 .mapstage{position:absolute;inset:0;overflow:hidden;background:#1a1817}
-.mapcover{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(100%, calc(100dvh * 7912 / 6781));aspect-ratio:7912 / 6781}
+.mapcover{position:absolute;top:0;left:0}
 .mapcover img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;filter:none;opacity:1;display:block}
 #hots{position:absolute;inset:0;pointer-events:none}
-.hot{position:absolute;z-index:2;background:transparent;padding:0;cursor:pointer;pointer-events:auto}
+.hot{position:absolute;z-index:2;background:transparent;padding:0;cursor:pointer;pointer-events:auto;overflow:visible}
+.shine{position:absolute;inset:0;overflow:hidden;pointer-events:none;transform-origin:var(--ox) var(--oy);transition:transform 180ms ease,filter 180ms ease}
+.shine img{position:absolute;max-width:none;filter:none}
+.hot:hover .shine,.hot.on .shine{transform:scale(1.12);filter:brightness(1.25) drop-shadow(0 0 6px rgba(255,255,255,.7)) drop-shadow(0 0 14px rgba(255,255,255,.35))}
 .fly{position:fixed;z-index:15;width:min(320px,calc(100vw - 16px));overflow:auto;background:#0e0e10;border:1px solid #3a3a3c;border-radius:16px;box-shadow:0 18px 44px rgba(0,0,0,.5);padding:10px 10px 6px}
 .fly[hidden]{display:none}
 .fly-title{margin:2px 6px 8px;font-size:15px;font-weight:600}
@@ -34,19 +37,12 @@ button{cursor:pointer;background:none;border:0}
 .iconbtn{width:40px;height:40px;flex:0 0 auto;display:grid;place-items:center;color:#f2f2f2;border-radius:50%;background:rgba(12,12,14,.72);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(12px)}
 .avatar{width:40px;height:40px;flex:0 0 auto;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(12,12,14,.72);display:grid;place-items:center;backdrop-filter:blur(12px)}
 .avatar span{font-size:11px;letter-spacing:.04em;color:#d1d1d6}
-.search{flex:1;display:flex;align-items:center;gap:8px;min-width:0;background:rgba(12,12,14,.72);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:9px 16px;backdrop-filter:blur(12px)}
-.search input{flex:1;min-width:0;border:0;outline:none;background:transparent;font-size:16px}
-.search input::placeholder{color:rgba(255,255,255,.5)}
-.gold{position:absolute;right:16px;bottom:16px;z-index:5;border-radius:999px;padding:14px 28px;font-size:16px;font-weight:600;letter-spacing:.01em;color:#241b0d;background:linear-gradient(180deg,#f6e7bf,#e4c27a 46%,#b8893e);box-shadow:0 8px 22px rgba(0,0,0,.35)}
-.zones{padding:22px 0 28px}
-.zones h2{margin:0 0 14px;text-align:center;font-size:15px;font-weight:400;color:#8e8e93}
-.carousel{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 16px 8px;scrollbar-width:none}
-.carousel::-webkit-scrollbar{display:none}
-.zcard{flex:0 0 min(78vw,320px);scroll-snap-align:center;border-radius:16px;overflow:hidden;border:1px solid #2c2c2e;background:#141416;padding:0;text-align:left}
-.zcard svg{width:100%;height:210px;display:block;background:#2a2c30}
-.dots{display:flex;justify-content:center;gap:7px;padding-top:8px}
-.dots button{width:6px;height:6px;border-radius:50%;background:#3a3a3c}
-.dots button.on{background:#f2f2f2}
+.search{position:absolute;left:50%;transform:translateX(-50%);z-index:7;display:flex;align-items:center;gap:4px;width:108px;background:rgba(12,12,14,.72);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:8px 10px;backdrop-filter:blur(12px)}
+.search input{width:4.8ch;border:0;outline:none;background:transparent;font-size:16px;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.search input::placeholder{color:rgba(255,255,255,.5);letter-spacing:.08em}
+.suggest{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);width:min(320px,calc(100vw - 16px));max-height:min(420px,62vh);overflow:auto;background:#0e0e10;border:1px solid #3a3a3c;border-radius:16px;box-shadow:0 18px 44px rgba(0,0,0,.5);padding:8px}
+.suggest[hidden]{display:none}
+.suggest .flyrow{width:100%;text-align:left;cursor:pointer;display:block}
 .sheet{position:fixed;inset:0;z-index:20;background:#000;display:flex;flex-direction:column}
 .sheet[hidden]{display:none}
 .sh{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 16px 8px}
@@ -70,7 +66,6 @@ button{cursor:pointer;background:none;border:0}
 .empty{color:#8e8e93}
 :focus-visible{outline:2px solid #fff;outline-offset:2px}
 @media(min-width:900px){
-  .zcard{flex-basis:300px}
   .sheet{left:auto;width:420px;border-left:1px solid #2c2c2e}
 }
 </style>
@@ -88,17 +83,12 @@ button{cursor:pointer;background:none;border:0}
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 6.5h14v9H8l-3 2.5z" stroke-linejoin="round"/></svg>
     </button>
     <label class="search"><span aria-hidden="true">⌕</span>
-      <input id="q" type="search" placeholder="Ville, plaque, VIN, pack hiver" autocomplete="off" aria-label="Rechercher un véhicule">
+      <input id="q" type="text" inputmode="numeric" maxlength="4" placeholder="VIN" autocomplete="off" aria-label="Rechercher un VIN">
+      <div class="suggest" id="suggest" hidden></div>
     </label>
     <button type="button" class="avatar" aria-label="Profil"><span>ES</span></button>
   </div>
-  <button type="button" class="gold" id="all">Voir la flotte</button>
 </div>
-<section class="zones">
-  <h2>Nos centres</h2>
-  <div class="carousel" id="carousel"></div>
-  <div class="dots" id="dots"></div>
-</section>
 <div class="fly" id="fly" hidden></div>
 <aside class="sheet" id="sheet" hidden>
   <div class="sh">
@@ -140,38 +130,38 @@ const CENTERS = [
    - surPlace true si le véhicule est sur place
    - x, y     position de départ sur la carte */
 const FLEET = [
-  { id:"v01", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000001", plate:"FT-101-AL", center:"sxb-sales", status:"disponible", battery:86, winter:true, x:62.0, y:39.3 },
-  { id:"v02", model:"Model 3", color:"Noir", swatch:"#2c2e33", vin:"LRW30TEST0000002", plate:"FT-118-SX", center:"sxb-sales", status:"en essai", battery:64, winter:false, x:63.6, y:40.1 },
-  { id:"v03", model:"Model Y", color:"Bleu", swatch:"#8aa4b5", vin:"LRWY0TEST0000003", plate:"FT-132-AL", center:"sxb-sales", status:"disponible", battery:91, winter:true, x:61.2, y:40.7 },
-  { id:"v04", model:"Model 3", color:"Rouge", swatch:"#9a6a6a", vin:"LRW30TEST0000004", plate:"FT-145-ST", center:"sxb-sales", status:"en charge", battery:41, winter:false, x:64.8, y:39.5 },
-  { id:"v05", model:"Model Y", color:"Gris", swatch:"#b0b3b8", vin:"LRWY0TEST0000005", plate:"FT-160-SX", center:"sxb-sales", status:"disponible", battery:73, winter:true, x:63.0, y:41.3 },
-  { id:"v06", model:"Model 3", color:"Blanc", swatch:"#f7f4ee", vin:"LRW30TEST0000006", plate:"FT-173-AL", center:"sxb-sales", status:"indisponible", battery:19, winter:false, x:60.8, y:38.5 },
-  { id:"v07", model:"Model Y", color:"Noir", swatch:"#3a3d44", vin:"LRWY0TEST0000007", plate:"FT-186-ST", center:"sxb-sales", status:"en essai", battery:88, winter:true, x:64.4, y:41.9 },
-  { id:"v08", model:"Model 3", color:"Gris", swatch:"#b0b3b8", vin:"LRW30TEST0000008", plate:"FT-201-AL", center:"sxb-essai", status:"disponible", battery:77, winter:false, x:62.8, y:42.3 },
-  { id:"v09", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000009", plate:"FT-214-SX", center:"sxb-essai", status:"disponible", battery:95, winter:true, x:64.4, y:43.1 },
-  { id:"v10", model:"Model 3", color:"Bleu", swatch:"#8aa4b5", vin:"LRW30TEST0000010", plate:"FT-227-ST", center:"sxb-essai", status:"en essai", battery:52, winter:false, x:61.6, y:42.7 },
-  { id:"v11", model:"Model Y", color:"Rouge", swatch:"#9a6a6a", vin:"LRWY0TEST0000011", plate:"FT-240-AL", center:"sxb-essai", status:"en charge", battery:33, winter:true, x:63.6, y:43.7 },
-  { id:"v12", model:"Model 3", color:"Noir", swatch:"#3a3d44", vin:"LRW30TEST0000012", plate:"FT-253-SX", center:"sxb-essai", status:"indisponible", battery:68, winter:false, x:62.2, y:44.1 },
-  { id:"v13", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000013", plate:"FT-301-AL", center:"rop", status:"disponible", battery:81, winter:true, x:77.2, y:13.2 },
-  { id:"v14", model:"Model 3", color:"Bleu", swatch:"#8aa4b5", vin:"LRW30TEST0000014", plate:"FT-314-ST", center:"rop", status:"en essai", battery:58, winter:false, x:78.6, y:14.0 },
-  { id:"v15", model:"Model Y", color:"Gris", swatch:"#b0b3b8", vin:"LRWY0TEST0000015", plate:"FT-327-SX", center:"rop", status:"disponible", battery:90, winter:true, x:76.4, y:14.4 },
-  { id:"v16", model:"Model 3", color:"Rouge", swatch:"#9a6a6a", vin:"LRW30TEST0000016", plate:"FT-340-AL", center:"rop", status:"en charge", battery:27, winter:false, x:79.4, y:12.8 },
-  { id:"v17", model:"Model Y", color:"Noir", swatch:"#3a3d44", vin:"LRWY0TEST0000017", plate:"FT-353-ST", center:"rop", status:"disponible", battery:74, winter:false, x:77.8, y:15.2 },
-  { id:"v18", model:"Model 3", color:"Blanc", swatch:"#f7f4ee", vin:"LRW30TEST0000018", plate:"FT-401-AL", center:"sel", status:"disponible", battery:83, winter:true, x:48.3, y:76.3 },
-  { id:"v19", model:"Model Y", color:"Bleu", swatch:"#8aa4b5", vin:"LRWY0TEST0000019", plate:"FT-414-SX", center:"sel", status:"en essai", battery:66, winter:true, x:48.2, y:78.4 },
-  { id:"v20", model:"Model 3", color:"Gris", swatch:"#b0b3b8", vin:"LRW30TEST0000020", plate:"FT-427-ST", center:"sel", status:"disponible", battery:49, winter:false, x:47.3, y:76.9 },
-  { id:"v21", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000021", plate:"FT-440-AL", center:"sel", status:"disponible", battery:92, winter:true, x:47.6, y:79.2 },
-  { id:"v22", model:"Model 3", color:"Noir", swatch:"#3a3d44", vin:"LRW30TEST0000022", plate:"FT-453-SX", center:"sel", status:"indisponible", battery:15, winter:false, x:48.9, y:77.9 },
-  { id:"v23", model:"Model Y", color:"Rouge", swatch:"#9a6a6a", vin:"LRWY0TEST0000023", plate:"FT-466-ST", center:"sel", status:"en charge", battery:71, winter:true, x:47.7, y:75.5 },
-  { id:"v24", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000024", plate:"FT-501-AL", center:"sav", status:"disponible", battery:79, winter:true, x:34.9, y:12.8 },
-  { id:"v25", model:"Model 3", color:"Bleu", swatch:"#8aa4b5", vin:"LRW30TEST0000025", plate:"FT-514-SX", center:"sav", status:"en essai", battery:55, winter:false, x:36.3, y:13.6 },
-  { id:"v26", model:"Model Y", color:"Gris", swatch:"#b0b3b8", vin:"LRWY0TEST0000026", plate:"FT-527-ST", center:"sav", status:"disponible", battery:87, winter:true, x:34.1, y:13.4 },
-  { id:"v27", model:"Model 3", color:"Rouge", swatch:"#9a6a6a", vin:"LRW30TEST0000027", plate:"FT-540-AL", center:"sav", status:"en charge", battery:38, winter:false, x:37.7, y:12.4 },
-  { id:"v28", model:"Model 3", color:"Blanc", swatch:"#f7f4ee", vin:"LRW30TEST0000028", plate:"FT-601-AL", center:"sar", status:"disponible", battery:80, winter:false, x:8.1, y:15.3 },
-  { id:"v29", model:"Model Y", color:"Noir", swatch:"#3a3d44", vin:"LRWY0TEST0000029", plate:"FT-614-SX", center:"sar", status:"en essai", battery:63, winter:true, x:9.7, y:16.1 },
-  { id:"v30", model:"Model 3", color:"Gris", swatch:"#b0b3b8", vin:"LRW30TEST0000030", plate:"FT-627-ST", center:"sar", status:"en charge", battery:44, winter:false, x:7.3, y:15.9 },
-  { id:"v31", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000031", plate:"FT-640-AL", center:"sar", status:"disponible", battery:96, winter:true, x:11.1, y:14.9 },
-  { id:"v32", model:"Model 3", color:"Bleu", swatch:"#8aa4b5", vin:"LRW30TEST0000032", plate:"FT-653-SX", center:"sar", status:"indisponible", battery:22, winter:false, x:8.9, y:16.9 }
+  { id:"v01", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST2101", plate:"FT-101-AL", center:"sxb-sales", status:"disponible", battery:86, winter:true, x:62.0, y:39.3 },
+  { id:"v02", model:"Model 3", color:"Noir", swatch:"#2c2e33", vin:"LRW30TEST2118", plate:"FT-118-SX", center:"sxb-sales", status:"en essai", battery:64, winter:false, x:63.6, y:40.1 },
+  { id:"v03", model:"Model Y", color:"Bleu", swatch:"#8aa4b5", vin:"LRWY0TEST2132", plate:"FT-132-AL", center:"sxb-sales", status:"disponible", battery:91, winter:true, x:61.2, y:40.7 },
+  { id:"v04", model:"Model 3", color:"Rouge", swatch:"#9a6a6a", vin:"LRW30TEST2145", plate:"FT-145-ST", center:"sxb-sales", status:"en charge", battery:41, winter:false, x:64.8, y:39.5 },
+  { id:"v05", model:"Model Y", color:"Gris", swatch:"#b0b3b8", vin:"LRWY0TEST2160", plate:"FT-160-SX", center:"sxb-sales", status:"disponible", battery:73, winter:true, x:63.0, y:41.3 },
+  { id:"v06", model:"Model 3", color:"Blanc", swatch:"#f7f4ee", vin:"LRW30TEST2173", plate:"FT-173-AL", center:"sxb-sales", status:"indisponible", battery:19, winter:false, x:60.8, y:38.5 },
+  { id:"v07", model:"Model Y", color:"Noir", swatch:"#3a3d44", vin:"LRWY0TEST2186", plate:"FT-186-ST", center:"sxb-sales", status:"en essai", battery:88, winter:true, x:64.4, y:41.9 },
+  { id:"v08", model:"Model 3", color:"Gris", swatch:"#b0b3b8", vin:"LRW30TEST2201", plate:"FT-201-AL", center:"sxb-essai", status:"disponible", battery:77, winter:false, x:62.8, y:42.3 },
+  { id:"v09", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST2214", plate:"FT-214-SX", center:"sxb-essai", status:"disponible", battery:95, winter:true, x:64.4, y:43.1 },
+  { id:"v10", model:"Model 3", color:"Bleu", swatch:"#8aa4b5", vin:"LRW30TEST2227", plate:"FT-227-ST", center:"sxb-essai", status:"en essai", battery:52, winter:false, x:61.6, y:42.7 },
+  { id:"v11", model:"Model Y", color:"Rouge", swatch:"#9a6a6a", vin:"LRWY0TEST2240", plate:"FT-240-AL", center:"sxb-essai", status:"en charge", battery:33, winter:true, x:63.6, y:43.7 },
+  { id:"v12", model:"Model 3", color:"Noir", swatch:"#3a3d44", vin:"LRW30TEST2253", plate:"FT-253-SX", center:"sxb-essai", status:"indisponible", battery:68, winter:false, x:62.2, y:44.1 },
+  { id:"v13", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST2301", plate:"FT-301-AL", center:"rop", status:"disponible", battery:81, winter:true, x:77.2, y:13.2 },
+  { id:"v14", model:"Model 3", color:"Bleu", swatch:"#8aa4b5", vin:"LRW30TEST2314", plate:"FT-314-ST", center:"rop", status:"en essai", battery:58, winter:false, x:78.6, y:14.0 },
+  { id:"v15", model:"Model Y", color:"Gris", swatch:"#b0b3b8", vin:"LRWY0TEST2327", plate:"FT-327-SX", center:"rop", status:"disponible", battery:90, winter:true, x:76.4, y:14.4 },
+  { id:"v16", model:"Model 3", color:"Rouge", swatch:"#9a6a6a", vin:"LRW30TEST2340", plate:"FT-340-AL", center:"rop", status:"en charge", battery:27, winter:false, x:79.4, y:12.8 },
+  { id:"v17", model:"Model Y", color:"Noir", swatch:"#3a3d44", vin:"LRWY0TEST2353", plate:"FT-353-ST", center:"rop", status:"disponible", battery:74, winter:false, x:77.8, y:15.2 },
+  { id:"v18", model:"Model 3", color:"Blanc", swatch:"#f7f4ee", vin:"LRW30TEST2401", plate:"FT-401-AL", center:"sel", status:"disponible", battery:83, winter:true, x:48.3, y:76.3 },
+  { id:"v19", model:"Model Y", color:"Bleu", swatch:"#8aa4b5", vin:"LRWY0TEST2414", plate:"FT-414-SX", center:"sel", status:"en essai", battery:66, winter:true, x:48.2, y:78.4 },
+  { id:"v20", model:"Model 3", color:"Gris", swatch:"#b0b3b8", vin:"LRW30TEST2427", plate:"FT-427-ST", center:"sel", status:"disponible", battery:49, winter:false, x:47.3, y:76.9 },
+  { id:"v21", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST2440", plate:"FT-440-AL", center:"sel", status:"disponible", battery:92, winter:true, x:47.6, y:79.2 },
+  { id:"v22", model:"Model 3", color:"Noir", swatch:"#3a3d44", vin:"LRW30TEST2453", plate:"FT-453-SX", center:"sel", status:"indisponible", battery:15, winter:false, x:48.9, y:77.9 },
+  { id:"v23", model:"Model Y", color:"Rouge", swatch:"#9a6a6a", vin:"LRWY0TEST2466", plate:"FT-466-ST", center:"sel", status:"en charge", battery:71, winter:true, x:47.7, y:75.5 },
+  { id:"v24", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST2501", plate:"FT-501-AL", center:"sav", status:"disponible", battery:79, winter:true, x:34.9, y:12.8 },
+  { id:"v25", model:"Model 3", color:"Bleu", swatch:"#8aa4b5", vin:"LRW30TEST2514", plate:"FT-514-SX", center:"sav", status:"en essai", battery:55, winter:false, x:36.3, y:13.6 },
+  { id:"v26", model:"Model Y", color:"Gris", swatch:"#b0b3b8", vin:"LRWY0TEST2527", plate:"FT-527-ST", center:"sav", status:"disponible", battery:87, winter:true, x:34.1, y:13.4 },
+  { id:"v27", model:"Model 3", color:"Rouge", swatch:"#9a6a6a", vin:"LRW30TEST2540", plate:"FT-540-AL", center:"sav", status:"en charge", battery:38, winter:false, x:37.7, y:12.4 },
+  { id:"v28", model:"Model 3", color:"Blanc", swatch:"#f7f4ee", vin:"LRW30TEST2601", plate:"FT-601-AL", center:"sar", status:"disponible", battery:80, winter:false, x:8.1, y:15.3 },
+  { id:"v29", model:"Model Y", color:"Noir", swatch:"#3a3d44", vin:"LRWY0TEST2614", plate:"FT-614-SX", center:"sar", status:"en essai", battery:63, winter:true, x:9.7, y:16.1 },
+  { id:"v30", model:"Model 3", color:"Gris", swatch:"#b0b3b8", vin:"LRW30TEST2627", plate:"FT-627-ST", center:"sar", status:"en charge", battery:44, winter:false, x:7.3, y:15.9 },
+  { id:"v31", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST2640", plate:"FT-640-AL", center:"sar", status:"disponible", battery:96, winter:true, x:11.1, y:14.9 },
+  { id:"v32", model:"Model 3", color:"Bleu", swatch:"#8aa4b5", vin:"LRW30TEST2653", plate:"FT-653-SX", center:"sar", status:"indisponible", battery:22, winter:false, x:8.9, y:16.9 }
 ];
 
 const PAS_SUR_PLACE=new Set(["v02","v04","v06","v09","v11","v14","v16","v20","v22","v25","v28","v30","v32"]);
@@ -184,12 +174,11 @@ let scope=null, selected=null, query="";
 
 function norm(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()}
 function esc(s){return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}
+function vinKey(s){return String(s||"").replace(/\s+/g,"").toLowerCase()}
 function hit(v){
-  const q=norm(query).trim();
+  const q=vinKey(query);
   if(!q) return true;
-  const c=centerById[v.center];
-  const blob=norm([v.model,v.color,v.vin,v.plate,c.city,c.role,v.status,v.winter?"pack hiver":"",v.surPlace?"sur place":"pas sur place"].join(" "));
-  return blob.includes(q);
+  return vinKey(v.vin).endsWith(q);
 }
 function inScope(v){
   if(!scope) return true;
@@ -198,14 +187,21 @@ function inScope(v){
 }
 function visible(v){return hit(v)&&inScope(v)}
 
-/* Zones invisibles sur le rond ET le nom déjà imprimés. % du cadre 7912×6781. */
+/* Zones sur le rond ET le nom. cx/cy : centre du rond, en % de l'image 7912×6781. */
 const HOTS=[
-  {city:"Sarrebourg", left:23.16, top:12.04, width:12.55, height:5.74},
-  {city:"Saverne", left:42.57, top:13.13, width:9.42, height:5.33},
-  {city:"Roppenheim", left:72.02, top:12.57, width:10.76, height:5.77},
-  {city:"Strasbourg", left:57.89, top:32.24, width:9.95, height:5.54},
-  {city:"Sélestat", left:35.75, top:58.52, width:7.17, height:4.77}
+  {city:"Sarrebourg", left:23.16, top:12.04, width:12.55, height:5.74, cx:24.46, cy:16.17},
+  {city:"Saverne", left:42.57, top:13.13, width:9.42, height:5.33, cx:43.87, cy:16.86},
+  {city:"Roppenheim", left:72.02, top:12.57, width:10.76, height:5.77, cx:81.50, cy:16.70},
+  {city:"Strasbourg", left:57.89, top:32.24, width:9.95, height:5.54, cx:61.82, cy:33.87},
+  {city:"Sélestat", left:35.75, top:58.52, width:7.17, height:4.77, cx:41.84, cy:59.73}
 ];
+const IMG_W=7912, IMG_H=6781;
+const Y_SAR=0.1617, Y_SEL=0.5973;
+const GAP_Y=Y_SEL-Y_SAR;
+const Y0=Y_SAR-0.30*GAP_Y, Y1=Y_SEL+0.20*GAP_Y;
+const MID_X=(0.2446+0.8150)/2;
+const ALL_X0=0.2316, ALL_X1=0.8278;
+const MUST_X0=0.2316, MUST_X1=0.6784;
 let flyCity=null, flySticky=false, flyTimer=null;
 function drawCities(){
   const g=$("hots");
@@ -219,6 +215,18 @@ function drawCities(){
     b.style.width=h.width+"%";
     b.style.height=h.height+"%";
     b.setAttribute("aria-label",h.city);
+    const ox=(h.cx-h.left)/h.width*100, oy=(h.cy-h.top)/h.height*100;
+    b.style.setProperty("--ox", ox+"%");
+    b.style.setProperty("--oy", oy+"%");
+    b.dataset.ox=String(ox);
+    b.dataset.oy=String(oy);
+    const shine=document.createElement("span");
+    shine.className="shine";
+    const simg=document.createElement("img");
+    simg.src="carte-alsace-villes.png";
+    simg.alt="";
+    shine.append(simg);
+    b.append(shine);
     b.addEventListener("pointerenter",()=>{
       if(flySticky && flyCity!==h.city) return;
       openFly(h.city,false);
@@ -254,30 +262,47 @@ function renderFly(){
   }else body=rows.map(flyRow).join("");
   box.innerHTML=`<p class="fly-title">${esc(flyCity)}</p>`+body;
 }
+function grownBox(btn){
+  const r=btn.getBoundingClientRect();
+  const ox=parseFloat(btn.dataset.ox)/100, oy=parseFloat(btn.dataset.oy)/100;
+  const s=1.12;
+  const oxp=r.left+ox*r.width, oyp=r.top+oy*r.height;
+  return {
+    top:oyp-(oyp-r.top)*s,
+    bottom:oyp+(r.bottom-oyp)*s,
+    left:oxp-(oxp-r.left)*s,
+    right:oxp+(r.right-oxp)*s,
+    midX:oxp
+  };
+}
 function placeFly(){
   const btn=[...document.querySelectorAll(".hot")].find(b=>b.getAttribute("aria-label")===flyCity);
   const fly=$("fly");
   if(!btn||fly.hidden) return;
-  const r=btn.getBoundingClientRect();
-  const gap=6, pad=8;
-  const below=window.innerHeight-pad-(r.bottom+gap);
-  const above=r.top-gap-pad;
+  const g=grownBox(btn);
+  const gap=8, pad=8;
+  const below=window.innerHeight-pad-(g.bottom+gap);
+  const above=g.top-gap-pad;
   const useBelow=below>=150||below>=above;
   fly.style.maxHeight=Math.max(120, Math.min(480, useBelow?below:above))+"px";
   fly.style.left="0px";
   fly.style.top="0px";
   const w=fly.offsetWidth, h=fly.offsetHeight;
-  let top=useBelow?r.bottom+gap:Math.max(pad, r.top-gap-h);
+  let top=useBelow?g.bottom+gap:Math.max(pad, g.top-gap-h);
   if(top+h>window.innerHeight-pad) top=Math.max(pad, window.innerHeight-pad-h);
-  let left=r.left+r.width/2-w/2;
+  let left=g.midX-w/2;
   left=Math.min(Math.max(pad,left), window.innerWidth-pad-w);
   fly.style.left=left+"px";
   fly.style.top=top+"px";
+}
+function markHot(){
+  document.querySelectorAll(".hot").forEach(b=>b.classList.toggle("on", b.getAttribute("aria-label")===flyCity));
 }
 function openFly(city,sticky){
   clearTimeout(flyTimer);
   flyCity=city;
   if(sticky) flySticky=true;
+  markHot();
   renderFly();
   $("fly").hidden=false;
   placeFly();
@@ -287,53 +312,54 @@ function closeFly(){
   flySticky=false;
   flyCity=null;
   $("fly").hidden=true;
+  markHot();
+}
+function layoutMap(){
+  const stage=$("mapstage");
+  const viewW=stage.clientWidth, viewH=stage.clientHeight;
+  if(!viewW||!viewH) return;
+  const vFrac=Y1-Y0;
+  let scale=viewH/(vFrac*IMG_H);
+  const allSpan=(ALL_X1-ALL_X0)*IMG_W;
+  const mustSpan=(MUST_X1-MUST_X0)*IMG_W+28;
+  if(allSpan*scale>viewW){
+    const fit=viewW/mustSpan;
+    if(fit<scale) scale=fit;
+  }
+  const dispW=IMG_W*scale, dispH=IMG_H*scale;
+  let top;
+  if(dispH<=viewH+0.5) top=(viewH-dispH)/2;
+  else{
+    top=-Y0*dispH;
+    if(top>0) top=0;
+    if(top+dispH<viewH) top=viewH-dispH;
+  }
+  let left;
+  const focus=allSpan*scale>viewW+1?(MUST_X0+MUST_X1)/2:MID_X;
+  if(dispW<=viewW+0.5) left=(viewW-dispW)/2;
+  else{
+    left=viewW/2-focus*dispW;
+    if(left>0) left=0;
+    if(left+dispW<viewW) left=viewW-dispW;
+  }
+  const cover=$("mapcover");
+  cover.style.width=dispW+"px";
+  cover.style.height=dispH+"px";
+  cover.style.left=left+"px";
+  cover.style.top=top+"px";
+  cover.style.transform="none";
+  document.querySelectorAll(".shine img").forEach(img=>{
+    const hot=img.closest(".hot");
+    img.style.width=dispW+"px";
+    img.style.height=dispH+"px";
+    img.style.left=(-parseFloat(hot.style.left)/100*dispW)+"px";
+    img.style.top=(-parseFloat(hot.style.top)/100*dispH)+"px";
+  });
 }
 function scheduleFlyClose(){
   if(flySticky) return;
   clearTimeout(flyTimer);
   flyTimer=setTimeout(closeFly, 220);
-}
-
-function mini(c){
-  const cars=FLEET.filter(v=>v.center===c.id);
-  const xs=cars.map(v=>v.x), ys=cars.map(v=>v.y);
-  const minX=Math.min(...xs)-18, maxX=Math.max(...xs)+18, minY=Math.min(...ys)-18, maxY=Math.max(...ys)+18;
-  const X=x=>20+((x-minX)/(maxX-minX||1))*150;
-  const Y=y=>36+((y-minY)/(maxY-minY||1))*88;
-  const streets=[0,1,2,3,4].map(i=>`<path d="M6 ${28+i*22} H194" stroke="#6e7278" stroke-width="1"/>`).join("")
-    +[0,1,2,3].map(i=>`<path d="M${24+i*46} 8 V132" stroke="#6e7278" stroke-width="1"/>`).join("");
-  const dots=cars.map(v=>`<circle cx="${X(v.x).toFixed(1)}" cy="${Y(v.y).toFixed(1)}" r="3.2" fill="${v.swatch}" stroke="#111" stroke-width=".6"/>`).join("");
-  const label=c.city+(c.kind==="store"?" · Store":" · Essai");
-  const w=Math.min(186, 28+label.length*7.6);
-  return `<svg viewBox="0 0 200 140" aria-hidden="true">
-    <rect width="200" height="140" fill="#2a2c30"/>
-    ${streets}
-    <path d="M36 34 L158 28 L176 62 L150 112 L46 118 L22 72 Z" fill="rgba(255,255,255,.08)" stroke="#d8d8dc" stroke-width="1.2"/>
-    <rect x="8" y="8" rx="8" width="${w}" height="26" fill="#000" stroke="#3a3a3c"/>
-    <text x="16" y="25" fill="#fff" font-size="11" font-family="Inter,Helvetica,Arial,sans-serif">${esc(label)}</text>
-    ${dots}
-  </svg>`;
-}
-function drawCarousel(){
-  const box=$("carousel"), dots=$("dots");
-  box.innerHTML=CENTERS.map(c=>`<button type="button" class="zcard" data-id="${c.id}" aria-label="${esc(c.city)} ${esc(c.role)}">${mini(c)}</button>`).join("");
-  dots.innerHTML=CENTERS.map((_,i)=>`<button type="button" data-i="${i}" aria-label="Centre ${i+1}"></button>`).join("");
-  box.querySelectorAll(".zcard").forEach(b=>b.addEventListener("click",()=>openCenter(b.dataset.id)));
-  dots.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
-    const card=box.children[+b.dataset.i];
-    card.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"});
-  }));
-  const mark=()=>{
-    const mid=box.scrollLeft+box.clientWidth/2;
-    let best=0, dist=1e9;
-    [...box.children].forEach((el,i)=>{
-      const c=el.offsetLeft+el.offsetWidth/2;
-      if(Math.abs(c-mid)<dist){dist=Math.abs(c-mid); best=i;}
-    });
-    dots.querySelectorAll("button").forEach((d,i)=>d.classList.toggle("on",i===best));
-  };
-  box.addEventListener("scroll",mark,{passive:true});
-  mark();
 }
 
 function rowHtml(v){
@@ -383,41 +409,49 @@ function renderList(){
   list.querySelectorAll(".row").forEach(btn=>btn.addEventListener("click",()=>openVehicle(btn.dataset.id)));
 }
 function openSheet(){ $("sheet").hidden=false; renderList(); }
-function openCity(city){
-  selected=null;
-  query="";
-  $("q").value="";
-  if(city==="Strasbourg") scope="city:Strasbourg";
-  else scope=CENTERS.find(x=>x.city===city).id;
-  openSheet();
-}
-function openCenter(id){ scope=id; selected=null; openSheet(); }
-function openAll(){ scope=null; selected=null; query=""; $("q").value=""; openSheet(); }
 function openVehicle(id){
   const v=FLEET.find(x=>x.id===id); if(!v) return;
   selected=id;
   openSheet();
 }
-$("q").addEventListener("input",e=>{
-  query=e.target.value;
-  closeFly();
-  if(query.trim()){ scope=null; selected=null; openSheet(); }
-  else if(!$("sheet").hidden) renderList();
-});
-$("all").addEventListener("click",()=>{ closeFly(); openAll(); });
+function renderSuggest(){
+  const box=$("suggest");
+  const q=vinKey($("q").value);
+  if(q.length<3){ box.hidden=true; box.innerHTML=""; return; }
+  const hits=FLEET.filter(v=>vinKey(v.vin).endsWith(q));
+  box.hidden=false;
+  if(!hits.length){ box.innerHTML='<p class="empty">Aucun véhicule</p>'; return; }
+  box.innerHTML=hits.map(v=>{
+    const c=centerById[v.center];
+    const here=v.surPlace;
+    return `<button type="button" class="flyrow" data-city="${esc(c.city)}">
+      <div class="fly-top"><span class="fly-vin">${esc(v.vin)}</span>
+        <span class="fly-bat"><span class="bar"><i style="width:${v.battery}%;background:${batColor(v.battery)}"></i></span>${v.battery} %</span></div>
+      <div class="fly-here"><span class="here${here?" on":""}"></span>${here?"Sur place":"Pas sur place"}</div>
+      <div class="fly-sub">${esc(c.city)} · ${esc(c.role)}</div>
+    </button>`;
+  }).join("");
+  box.querySelectorAll("button").forEach(b=>b.addEventListener("click",e=>{
+    e.stopPropagation();
+    box.hidden=true;
+    openFly(b.dataset.city,true);
+  }));
+}
+$("q").addEventListener("input",()=>{ closeFly(); renderSuggest(); });
 $("close").addEventListener("click",()=>{ $("sheet").hidden=true; selected=null; scope=null; });
 $("fly").addEventListener("pointerenter",()=>clearTimeout(flyTimer));
 $("fly").addEventListener("pointerleave",scheduleFlyClose);
 document.addEventListener("click",e=>{
-  if(e.target.closest("#fly")||e.target.closest(".hot")) return;
+  if(!e.target.closest(".search")) $("suggest").hidden=true;
+  if(e.target.closest("#fly")||e.target.closest(".hot")||e.target.closest(".search")) return;
   closeFly();
 });
 document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"){ closeFly(); $("close").click(); }
+  if(e.key==="Escape"){ $("suggest").hidden=true; closeFly(); $("close").click(); }
 });
 drawCities();
-drawCarousel();
-window.addEventListener("resize",()=>{ if(flyCity) placeFly(); });
+layoutMap();
+window.addEventListener("resize",()=>{ layoutMap(); if(flyCity) placeFly(); });
 </script>
 </body>
 </html>
