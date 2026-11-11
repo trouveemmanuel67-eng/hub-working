@@ -374,6 +374,10 @@ a{color:inherit}
       <div class="gestion-list" id="sms-list" hidden></div>
     </div>
     <div class="gestion">
+      <button type="button" class="gestion-toggle" id="mail-toggle" aria-expanded="false" aria-controls="mail-list"><span class="acc-name">TEMPLATE MAIL</span><span class="chev" aria-hidden="true">▾</span></button>
+      <div class="gestion-list" id="mail-list" hidden></div>
+    </div>
+    <div class="gestion">
       <button type="button" class="gestion-toggle" id="indisponible-toggle" aria-expanded="false" aria-controls="indisponible-list"><span class="acc-name">INDISPONIBLE <span class="acc-count" id="indisponible-count"></span></span><span class="chev" aria-hidden="true">▾</span></button>
       <div class="gestion-list" id="indisponible-list" hidden></div>
     </div>
@@ -437,6 +441,39 @@ const SMS_TEMPLATES = {
   Saverne: { site:"Saverne", sc:"Phalsbourg", text:smsText("Phalsbourg") },
   Roppenheim: { site:"Roppenheim", sc:"Baden-Baden", text:smsText("Baden-Baden") },
   Sélestat: { site:"Sélestat", sc:"Herbolzheim", text:smsText("Herbolzheim") }
+};
+/* Mail des mêmes centres. Pas d'aperçu : nom du centre et bouton copier.
+   {CENTRE} = nom du centre, {SC} identique au SMS. */
+function mailText(centre, sc){
+  return [
+    "Objet : Votre essai Tesla en libre-service à "+centre,
+    "",
+    "Bonjour,",
+    "",
+    "Merci pour votre intérêt et bienvenue pour votre essai Tesla en libre-service à "+centre+".",
+    "",
+    "Voici le déroulement de votre essai :",
+    "- 5 minutes de prise en main du véhicule ;",
+    "- 15 minutes de recharge au Superchargeur de "+sc+".",
+    "",
+    "Pour vous y rendre, indiquez « Superchargeur » dans le navigateur du véhicule, puis sélectionnez la station de "+sc+".",
+    "",
+    "Afin de finaliser votre essai, merci de nous transmettre en réponse à ce mail les informations suivantes :",
+    "- votre adresse postale ;",
+    "- votre date de naissance ;",
+    "- votre numéro de permis de conduire.",
+    "",
+    "Nous vous souhaitons une excellente expérience au volant !",
+    "",
+    "Bien cordialement,",
+    "L'équipe Tesla Strasbourg"
+  ].join("\n");
+}
+const MAIL_TEMPLATES = {
+  Sarrebourg: { site:"Sarrebourg", sc:"Phalsbourg", text:mailText("Sarrebourg", "Phalsbourg") },
+  Saverne: { site:"Saverne", sc:"Phalsbourg", text:mailText("Saverne", "Phalsbourg") },
+  Roppenheim: { site:"Roppenheim", sc:"Baden-Baden", text:mailText("Roppenheim", "Baden-Baden") },
+  Sélestat: { site:"Sélestat", sc:"Herbolzheim", text:mailText("Sélestat", "Herbolzheim") }
 };
 const LIENS_UTILES_LINKS = {TSS:'', GARAGE:'', REGISTRATION:'', LIVE:'', SMP:'', DRO:''};
 const GESTION_LINKS = LIENS_UTILES_LINKS;
@@ -1054,9 +1091,24 @@ function renderSms(){
     copyText(item.text).then(()=>showToast("Copié"));
   }));
 }
+function renderMail(){
+  const box=$("mail-list");
+  box.innerHTML=Object.values(MAIL_TEMPLATES).map(t=>`<div class="sms-item">
+      <span class="sms-site">${esc(t.site)}</span>
+      <button type="button" class="sms-copy" data-site="${escAttr(t.site)}" title="Copier le mail" aria-label="Copier le mail ${escAttr(t.site)}">Copier</button>
+    </div>`).join("");
+  box.querySelectorAll(".sms-copy").forEach(b=>b.addEventListener("click",e=>{
+    e.stopPropagation();
+    e.preventDefault();
+    const item=MAIL_TEMPLATES[b.dataset.site];
+    if(!item) return;
+    copyText(item.text).then(()=>showToast("Copié"));
+  }));
+}
 function renderGestion(){
   renderLinkList($("liens-list"), LIENS_UTILES_LINKS, liensActive(), selectLien);
   renderSms();
+  renderMail();
   const sales=[...RELEASE_STOCK].sort((a,b)=>a.listed<b.listed?-1:1);
   $("release-count").textContent="("+sales.length+")";
   $("release-list").innerHTML=sales.map(releaseCard).join("");
