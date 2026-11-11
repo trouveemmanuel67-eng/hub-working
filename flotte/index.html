@@ -19,7 +19,9 @@ button,input{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0}
 a{color:inherit}
 .screen{position:relative;height:100vh;overflow:hidden;background:#1a1817}
-.mapstage{position:absolute;inset:0;overflow:hidden;background:#1a1817}
+.mapstage{position:absolute;inset:0;overflow:hidden;background:#1a1817;cursor:grab;touch-action:none}
+.mapstage.panning,.mapstage.panning *{cursor:grabbing}
+.mapworld{position:absolute;inset:0}
 .mapcover{position:absolute;top:0;left:0}
 .mapcover>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;filter:none;opacity:1;display:block}
 #hots{position:absolute;inset:0;pointer-events:none;z-index:2}
@@ -262,12 +264,16 @@ a{color:inherit}
 <body>
 <div class="screen menu-open" id="screen">
   <div class="mapstage" id="mapstage">
+    <div class="mapworld" id="mapworld">
     <div class="mapcover" id="mapcover">
       <img id="basemap" src="carte-alsace-villes-ronds.png" alt="Carte de l'Alsace">
       <img id="roads" class="roads" alt="" decoding="async">
       <button type="button" class="super" data-id="phal" style="left:38.907%;top:12.664%" aria-label="Superchargeur Phalsbourg" title="Superchargeur Phalsbourg"><img src="logo-superchargeur.webp" alt="" width="64" height="64"></button>
       <button type="button" class="super" data-id="rop" style="left:94.290%;top:29.457%" aria-label="Superchargeur Roppenheim" title="Superchargeur Roppenheim"><img src="logo-superchargeur.webp" alt="" width="64" height="64"></button>
       <div id="hots"></div>
+    </div>
+    <div class="fly" id="fly" hidden></div>
+    <div class="fly" id="supercard" hidden></div>
     </div>
   </div>
   <button type="button" class="navbtn" id="navbtn" aria-label="Ouvrir le menu" aria-expanded="true">☰</button>
@@ -294,8 +300,6 @@ a{color:inherit}
     <button type="button" class="avatar" aria-label="Profil"><span>ES</span></button>
   </div>
 </div>
-<div class="fly" id="fly" hidden></div>
-<div class="fly" id="supercard" hidden></div>
 <div class="toast" id="toast" hidden role="status"></div>
 <aside class="sheet" id="sheet" hidden>
   <div class="sh">
@@ -581,8 +585,8 @@ function placeFly(){
   let left=r.left+r.width/2-w/2;
   const maxLeft=window.innerWidth-pad-w;
   left=Math.min(Math.max(box.minMenu, left), Math.max(box.minMenu, maxLeft));
-  fly.style.left=left+"px";
-  fly.style.top=top+"px";
+  fly.style.left=(left-panX)+"px";
+  fly.style.top=(top-panY)+"px";
 }
 function roadRadius(){
   const map=$("mapcover").getBoundingClientRect();
@@ -659,7 +663,27 @@ function layoutMap(){
   cover.style.left=left+"px";
   cover.style.top=top+"px";
   cover.style.transform="none";
+  setPan(panX, panY);
 }
+let panX=0, panY=0, panPtr=null, suppressClick=false;
+function panLimits(){
+  const stageW=$("mapstage").clientWidth, stageH=$("mapstage").clientHeight;
+  const cover=$("mapcover");
+  const left=parseFloat(cover.style.left)||0, top=parseFloat(cover.style.top)||0;
+  const dispW=parseFloat(cover.style.width)||0, dispH=parseFloat(cover.style.height)||0;
+  let minX=stageW-(left+dispW), maxX=-left;
+  let minY=stageH-(top+dispH), maxY=-top;
+  if(!(dispW>stageW+0.5)||minX>maxX) minX=maxX=0;
+  if(!(dispH>stageH+0.5)||minY>maxY) minY=maxY=0;
+  return {minX,maxX,minY,maxY};
+}
+function setPan(x,y){
+  const lim=panLimits();
+  panX=Math.min(lim.maxX, Math.max(lim.minX, x));
+  panY=Math.min(lim.maxY, Math.max(lim.minY, y));
+  $("mapworld").style.transform=`translate(${panX}px,${panY}px)`;
+}
+function resetPan(){ setPan(0,0); }
 function paintNames(){
   const src=$("basemap");
   if(!src.naturalWidth) return;
@@ -744,8 +768,8 @@ function openSuper(id, anchor){
   if(top+h>window.innerHeight-pad) top=Math.max(pad, r.top-8-h);
   let left=r.left+r.width/2-w/2;
   left=Math.min(Math.max(pad,left), window.innerWidth-pad-w);
-  card.style.left=left+"px";
-  card.style.top=top+"px";
+  card.style.left=(left-panX)+"px";
+  card.style.top=(top-panY)+"px";
 }
 
 function rowHtml(v){
@@ -831,8 +855,45 @@ document.querySelectorAll(".gestion-toggle").forEach(btn=>btn.addEventListener("
 }));
 document.querySelectorAll(".super").forEach(btn=>btn.addEventListener("click",e=>{
   e.stopPropagation();
+  if(suppressClick) return;
   openSuper(btn.dataset.id, btn);
 }));
+const stage=$("mapstage");
+stage.addEventListener("pointerdown",e=>{
+  if(e.pointerType==="mouse" && e.button!==0) return;
+  if(e.target.closest("#fly")||e.target.closest("#supercard")) return;
+  panPtr={id:e.pointerId, x:e.clientX, y:e.clientY, ox:panX, oy:panY, moved:false};
+});
+function movePan(e){
+  if(!panPtr||e.pointerId!==panPtr.id) return;
+  const dx=e.clientX-panPtr.x, dy=e.clientY-panPtr.y;
+  if(!panPtr.moved && Math.hypot(dx,dy)<=5) return;
+  panPtr.moved=true;
+  stage.classList.add("panning");
+  setPan(panPtr.ox+dx, panPtr.oy+dy);
+}
+stage.addEventListener("pointermove",movePan);
+document.addEventListener("pointermove",movePan);
+function endPan(e){
+  if(!panPtr||e.pointerId!==panPtr.id) return;
+  if(panPtr.moved) suppressClick=true;
+  panPtr=null;
+  stage.classList.remove("panning");
+}
+stage.addEventListener("pointerup",endPan);
+stage.addEventListener("pointercancel",endPan);
+document.addEventListener("pointerup",endPan);
+stage.addEventListener("click",e=>{
+  if(!suppressClick) return;
+  suppressClick=false;
+  e.preventDefault();
+  e.stopPropagation();
+}, true);
+stage.addEventListener("dblclick",e=>{
+  if(e.target.closest("#fly")||e.target.closest("#supercard")) return;
+  resetPan();
+});
+stage.addEventListener("wheel",e=>{ e.preventDefault(); }, {passive:false});
 document.addEventListener("click",e=>{
   if(!e.target.closest(".search")) $("suggest").hidden=true;
   if(!e.target.closest(".super") && !e.target.closest("#supercard")) closeSuper();
