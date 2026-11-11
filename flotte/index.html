@@ -32,6 +32,12 @@ a{color:inherit}
   -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat
 }
 .mapcover img.roads.on{opacity:.88}
+.mapcover img.super{
+  inset:auto;z-index:3;pointer-events:none;
+  left:38.57%;top:16.31%;width:1.65%;height:auto;
+  transform:translate(-50%,-50%);
+  filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.85))
+}
 .nameglow{
   position:absolute;pointer-events:none;opacity:0;
   transition:opacity 200ms ease;
@@ -258,6 +264,7 @@ a{color:inherit}
     <div class="mapcover" id="mapcover">
       <img id="basemap" src="carte-alsace-villes-ronds.png" alt="Carte de l'Alsace">
       <img id="roads" class="roads" alt="" decoding="async">
+      <img id="super" class="super" src="logo-superchargeur.webp" alt="Superchargeur" title="Superchargeur" width="64" height="64">
       <div id="hots"></div>
     </div>
   </div>
