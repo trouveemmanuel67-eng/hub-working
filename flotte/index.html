@@ -81,7 +81,7 @@ a{color:inherit}
 .search input::placeholder{color:rgba(255,255,255,.45);letter-spacing:.08em}
 .suggest{
   position:absolute;top:calc(100% + 8px);left:0;
-  width:min(460px, calc(100vw - 36px));
+  width:min(528px, calc(100vw - 36px));
   max-height:min(420px,62vh);overflow:auto;
   background:rgba(10,10,10,.94);
   border:1px solid rgba(255,255,255,.85);
@@ -174,7 +174,7 @@ a{color:inherit}
 }
 .fly{
   position:fixed;z-index:18;
-  width:min(460px, calc(100vw - 16px));
+  width:min(528px, calc(100vw - 16px));
   overflow:auto;background:#0e0e10;
   border:1px solid rgba(176,176,181,.65);
   border-radius:16px;
@@ -186,28 +186,29 @@ a{color:inherit}
 .fly-title .ar{margin-left:auto;font-size:12px;font-weight:400;color:rgba(255,255,255,.55);white-space:nowrap}
 .fly .site{margin:8px 6px 4px;font-size:12px;font-weight:500;letter-spacing:.03em;color:#d1d1d6}
 .flyrow{
-  height:34px;display:flex;align-items:center;gap:8px;
-  padding:0 8px;margin:0 0 4px;border-radius:10px;
+  height:34px;display:grid;align-items:center;column-gap:8px;
+  grid-template-columns:108px 76px minmax(0,1fr) 104px 92px;
+  width:100%;min-width:0;padding:0 8px;margin:0 0 4px;border-radius:10px;
   background:#141416;border:1px solid #2c2c2e;
   white-space:nowrap
 }
-.copy{cursor:pointer;background:none;border:0;padding:0;font-size:12px;font-weight:600;letter-spacing:.01em;color:#fff}
+.copy{cursor:pointer;background:none;border:0;padding:0;min-width:0;font-size:12px;font-weight:600;letter-spacing:.01em;color:#fff;text-align:left}
 .copy.plate{font-weight:500;color:#d1d1d6}
-.fly-bat{display:flex;align-items:center;gap:5px;font-size:12px;color:#d1d1d6;flex:0 0 auto}
-.bar{width:36px;height:5px;border-radius:99px;background:#2a2a2e;overflow:hidden}
+.fly-bat{display:flex;align-items:center;gap:5px;min-width:0;font-size:12px;color:#d1d1d6}
+.bar{width:36px;height:5px;border-radius:99px;background:#2a2a2e;overflow:hidden;flex:0 0 auto}
 .bar i{display:block;height:100%;border-radius:99px}
 .herepill{
-  flex:0 0 auto;font-size:11px;line-height:1;
-  border-radius:999px;padding:3px 7px;
+  width:100%;box-sizing:border-box;text-align:center;font-size:11px;line-height:1;
+  border-radius:999px;padding:3px 4px;
   border:1px solid rgba(176,176,181,.65);color:#d1d1d6
 }
 .herepill.on{border-color:#3dd68c;color:#d8ffe8}
 .herepill .short{display:none}
 .start{
-  margin-left:auto;flex:0 0 auto;height:24px;padding:0 8px;
+  width:100%;box-sizing:border-box;margin:0;height:24px;padding:0 6px;
   border-radius:999px;border:1px solid rgba(176,176,181,.7);
   background:transparent;color:#fff;font-size:11px;
-  display:inline-flex;align-items:center;gap:4px
+  display:inline-flex;align-items:center;justify-content:center;gap:4px
 }
 .start.on{background:#123524;border-color:#3dd68c;color:#d8ffe8}
 .toast{
@@ -545,7 +546,7 @@ function placeFly(){
   const low=anchorLow(btn);
   const gap=8, pad=8;
   const avail=Math.max(220, window.innerWidth-pad-box.minMenu);
-  fly.style.width=Math.min(460, avail)+"px";
+  fly.style.width=Math.min(528, avail)+"px";
   const below=window.innerHeight-pad-(low+gap);
   const above=r.top-gap-pad;
   const useBelow=below>=150||below>=above;
