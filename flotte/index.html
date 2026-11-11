@@ -443,7 +443,7 @@ const Y_SAR=0.1617, Y_SEL=0.5973;
 const GAP_Y=Y_SEL-Y_SAR;
 const Y0=Y_SAR-0.30*GAP_Y, Y1=Y_SEL+0.20*GAP_Y;
 const ALL_X0=0.2316, ALL_X1=0.8278;
-let flyCity=null, flySticky=false, flyTimer=null, toastTimer=null;
+let flyCity=null, flySticky=false, flyTimer=null, toastTimer=null, superTimer=null;
 
 function usefulBox(){
   const stage=$("mapstage").getBoundingClientRect();
@@ -629,6 +629,7 @@ function markHot(){
   document.querySelectorAll(".hot").forEach(b=>b.classList.toggle("on", b.getAttribute("aria-label")===flyCity));
 }
 function openFly(city,sticky){
+  closeSuper();
   clearTimeout(flyTimer);
   flyCity=city;
   if(sticky) flySticky=true;
@@ -805,9 +806,24 @@ function renderGestion(){
   renderLinkList($("liens-list"), LIENS_UTILES_LINKS, liensActive(), selectLien);
   renderLinkList($("release-list"), RELEASE_LINKS, "", ()=>{});
 }
-function closeSuper(){ $("supercard").hidden=true; }
+function closeSuper(){
+  clearTimeout(superTimer);
+  superTimer=null;
+  $("supercard").hidden=true;
+}
+function scheduleSuperClose(){
+  clearTimeout(superTimer);
+  superTimer=setTimeout(()=>{
+    if(document.querySelector(".super:hover, #supercard:hover")) return;
+    closeSuper();
+  }, 150);
+}
 function openSuper(id, anchor){
+  if(panPtr&&panPtr.moved) return;
+  if($("mapstage").classList.contains("panning")) return;
+  closeFly();
   const s=SUPERCHARGERS.find(x=>x.id===id); if(!s) return;
+  clearTimeout(superTimer);
   const card=$("supercard");
   card.innerHTML=`<p class="fly-title"><span>${esc(s.name)}</span><span class="ar">⇄ ${s.min} min · ${esc(s.near)}</span></p>`;
   card.hidden=false;
@@ -904,11 +920,32 @@ document.querySelectorAll(".gestion-toggle").forEach(btn=>btn.addEventListener("
     if(flyCity){ placeFly(); setRoads(flyCity); }
   }
 }));
-document.querySelectorAll(".super").forEach(btn=>btn.addEventListener("click",e=>{
-  e.stopPropagation();
-  if(suppressClick) return;
-  openSuper(btn.dataset.id, btn);
-}));
+document.querySelectorAll(".super").forEach(btn=>{
+  btn.addEventListener("pointerenter",e=>{
+    if(e.pointerType!=="mouse") return;
+    if(panPtr&&panPtr.moved) return;
+    clearTimeout(superTimer);
+    openSuper(btn.dataset.id, btn);
+  });
+  btn.addEventListener("pointerleave",e=>{
+    if(e.pointerType!=="mouse") return;
+    scheduleSuperClose();
+  });
+  btn.addEventListener("click",e=>{
+    e.stopPropagation();
+    if(suppressClick) return;
+    clearTimeout(superTimer);
+    openSuper(btn.dataset.id, btn);
+  });
+});
+$("supercard").addEventListener("pointerenter",e=>{
+  if(e.pointerType!=="mouse") return;
+  clearTimeout(superTimer);
+});
+$("supercard").addEventListener("pointerleave",e=>{
+  if(e.pointerType!=="mouse") return;
+  scheduleSuperClose();
+});
 const stage=$("mapstage");
 stage.addEventListener("dragstart",e=>{ e.preventDefault(); });
 stage.addEventListener("pointerdown",e=>{
@@ -923,6 +960,7 @@ function movePan(e){
   if(!panPtr||e.pointerId!==panPtr.id) return;
   const dx=e.clientX-panPtr.x, dy=e.clientY-panPtr.y;
   if(!panPtr.moved && Math.hypot(dx,dy)<=5) return;
+  if(!panPtr.moved) closeSuper();
   if(!stage.hasPointerCapture(e.pointerId)) stage.setPointerCapture(e.pointerId);
   panPtr.moved=true;
   stage.classList.add("panning");
