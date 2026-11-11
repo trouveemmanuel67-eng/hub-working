@@ -4,9 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FLEET MAP</title>
-<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
-<link rel="icon" href="favicon-16.png" sizes="16x16" type="image/png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="favicon.ico?v=fm" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=fm">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png?v=fm">
+<link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png?v=fm">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=fm">
 <meta property="og:title" content="FLEET MAP">
 <meta property="og:image" content="https://trouveemmanuel67-eng.github.io/hub-working/flotte/logo-fleet-map-v2.webp">
 <meta property="og:image:type" content="image/webp">
@@ -341,7 +343,7 @@ a{color:inherit}
   <div class="mapstage" id="mapstage">
     <div class="mapworld" id="mapworld">
     <div class="mapcover" id="mapcover">
-      <img id="basemap" src="carte-alsace-villes-ronds.png" alt="Carte de l'Alsace" draggable="false">
+      <img id="basemap" src="carte-alsace-villes-fond.png" alt="Carte de l'Alsace" draggable="false">
       <img id="roads" class="roads" alt="" decoding="async" draggable="false">
       <button type="button" class="super" data-id="phal" style="left:38.907%;top:12.664%" aria-label="Superchargeur Phalsbourg"><img src="logo-superchargeur.webp" alt="" width="64" height="64" draggable="false"></button>
       <button type="button" class="super" data-id="baden" style="left:88.800%;top:22.070%" aria-label="Superchargeur Baden-Baden"><img src="logo-superchargeur.webp" alt="" width="64" height="64" draggable="false"></button>
@@ -1391,7 +1393,7 @@ renderGestion();
 drawCities();
 layoutMap();
 $("basemap").addEventListener("load",()=>{ layoutMap(); if(flyCity) placeFly(); });
-requestAnimationFrame(()=>{ const roads=$("roads"); if(!roads.getAttribute("src")) roads.src="carte-alsace-routes.webp"; });
+requestAnimationFrame(()=>{ const roads=$("roads"); if(!roads.getAttribute("src")) roads.src="carte-alsace-routes.webp?v=fond"; });
 window.addEventListener("resize",()=>{ layoutMap(); if(flyCity){ placeFly(); setRoads(flyCity); } });
 </script>
 </body>
