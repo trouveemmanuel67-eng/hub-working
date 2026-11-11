@@ -6,14 +6,13 @@
 <title>Flotte Strasbourg Sales</title>
 <style>
 *{box-sizing:border-box}
-html,body{margin:0;background:#000;color:#fff;font-family:Inter,"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:400}
+html,body{margin:0;background:#1a1817;color:#fff;font-family:Inter,"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:400}
 button,input{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0}
-.screen{position:relative;height:100dvh;overflow:hidden;background:#000}
-.mapstage{position:absolute;inset:0;overflow:hidden;scrollbar-width:none}
-.mapstage::-webkit-scrollbar{display:none}
-.mapcover{position:absolute;top:0;left:50%;transform:translateX(-50%);width:max(100%, calc(100dvh * 7912 / 6781));aspect-ratio:7912 / 6781}
-.mapcover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:none;opacity:1;display:block}
+.screen{position:relative;height:100dvh;overflow:hidden;background:#1a1817}
+.mapstage{position:absolute;inset:0;overflow:hidden;background:#1a1817}
+.mapcover{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(100%, calc(100dvh * 7912 / 6781));aspect-ratio:7912 / 6781}
+.mapcover img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;filter:none;opacity:1;display:block}
 #hots{position:absolute;inset:0;pointer-events:none}
 .hot{position:absolute;z-index:2;background:transparent;padding:0;cursor:pointer;pointer-events:auto}
 .fly{position:fixed;z-index:15;width:min(320px,calc(100vw - 16px));overflow:auto;background:#0e0e10;border:1px solid #3a3a3c;border-radius:16px;box-shadow:0 18px 44px rgba(0,0,0,.5);padding:10px 10px 6px}
@@ -70,10 +69,6 @@ button{cursor:pointer;background:none;border:0}
 .pill{font-size:11px;border-radius:999px;padding:4px 8px;border:1px solid #3a3a3c;color:#d1d1d6;white-space:nowrap}
 .empty{color:#8e8e93}
 :focus-visible{outline:2px solid #fff;outline-offset:2px}
-@media (orientation: portrait) and (max-width: 900px){
-  .mapstage{overflow-x:auto;overflow-y:hidden;touch-action:pan-x}
-  .mapcover{left:0;transform:none}
-}
 @media(min-width:900px){
   .zcard{flex-basis:300px}
   .sheet{left:auto;width:420px;border-left:1px solid #2c2c2e}
@@ -422,18 +417,7 @@ document.addEventListener("keydown",e=>{
 });
 drawCities();
 drawCarousel();
-const portraitQuery=window.matchMedia("(orientation: portrait) and (max-width: 900px)");
-function frameMap(){
-  const stage=$("mapstage");
-  if(!portraitQuery.matches){ stage.scrollLeft=0; return; }
-  const cover=$("mapcover");
-  stage.scrollLeft=Math.max(0, cover.offsetWidth*0.618 - stage.clientWidth/2);
-}
-$("mapstage").addEventListener("scroll",()=>{ if(flyCity) placeFly(); },{passive:true});
 window.addEventListener("resize",()=>{ if(flyCity) placeFly(); });
-portraitQuery.addEventListener("change", frameMap);
-$("basemap").addEventListener("load", frameMap);
-frameMap();
 </script>
 </body>
 </html>
