@@ -25,7 +25,7 @@ a{color:inherit}
 #hots{position:absolute;inset:0;pointer-events:none;z-index:2}
 .hot{position:absolute;z-index:2;background:transparent;padding:0;cursor:pointer;pointer-events:auto;overflow:visible}
 .mapcover img.roads{
-  z-index:1;pointer-events:none;opacity:0;mix-blend-mode:screen;transition:opacity 250ms ease;
+  z-index:1;pointer-events:none;opacity:0;transition:opacity 250ms ease;
   --rx:50%;--ry:30%;--rr:180px;
   -webkit-mask-image:radial-gradient(circle var(--rr) at var(--rx) var(--ry), #fff 0%, transparent 100%);
   mask-image:radial-gradient(circle var(--rr) at var(--rx) var(--ry), #fff 0%, transparent 100%);
@@ -603,46 +603,32 @@ function layoutMap(){
   const stageW=stage.clientWidth, stageH=stage.clientHeight;
   if(!stageW||!stageH) return;
   const box=usefulBox();
-  const vFrac=Y1-Y0;
-  const allSpan=(ALL_X1-ALL_X0)*IMG_W+36;
-  let scale=stageH/(vFrac*IMG_H);
+  const nameTop=Math.min(...HOTS.map(h=>h.ny0))/100;
+  const nameBottom=Math.max(...HOTS.map(h=>h.ny1))/100;
+  const span=Math.max(0.2, nameBottom-nameTop);
+  const bottomMargin=Math.max(72, Math.round(stageH*0.08));
+  const mark=document.querySelector(".wordmark");
+  const markBottom=mark?mark.getBoundingClientRect().bottom:44;
+  const topLimit=box.y>8 ? box.y+12 : Math.max(56, Math.round(markBottom+12));
+  const fitH=Math.max(160, stageH-bottomMargin-topLimit);
+  const allSpan=(ALL_X1-ALL_X0)*IMG_W+28;
+  let scale=fitH/(span*IMG_H);
   if(allSpan*scale>box.w) scale=box.w/allSpan;
-  const below=box.y>8;
-  if(below){
-    const nameFrac=Math.min(...HOTS.map(h=>h.ny0))/100;
-    scale=Math.max(scale, stageH/IMG_H, stageW/IMG_W, nameFrac?box.y/(nameFrac*IMG_H):0);
-  }else{
-    const safeLeft=box.x;
-    scale=Math.max(
-      scale,
-      ALL_X0?safeLeft/(ALL_X0*IMG_W):0,
-      stageH/IMG_H,
-      stageW/IMG_W,
-      (1-ALL_X0)?(stageW-safeLeft)/((1-ALL_X0)*IMG_W):0,
-      (1-Y0)?stageH/((1-Y0)*IMG_H):0
-    );
-  }
   const dispW=IMG_W*scale, dispH=IMG_H*scale;
-  let left, top;
-  if(below){
-    const nameFrac=Math.min(...HOTS.map(h=>h.ny0))/100;
-    left=Math.min(0, stageW-dispW);
-    top=box.y-nameFrac*dispH;
-    if(top>0) top=0;
-    if(top+dispH<stageH) top=stageH-dispH;
-    if(top>0) top=0;
+  let top=topLimit-nameTop*dispH;
+  if(box.y>8){
+    const minTop=box.y+12-nameTop*dispH;
+    if(top<minTop) top=minTop;
   }else{
-    const leftSafe=box.x-ALL_X0*dispW;
-    left=leftSafe;
-    const leftCover=stageW-dispW;
-    if(leftCover>left) left=leftCover;
-    if(left>0) left=0;
-    if(left<leftSafe) left=leftSafe;
-    top=-Y0*dispH;
-    if(top>0) top=0;
-    if(top+dispH<stageH) top=stageH-dispH;
-    if(top>0) top=0;
+    const spare=(stageH-bottomMargin)-(top+nameBottom*dispH);
+    if(top>0 && spare>0) top-=Math.min(top, spare);
   }
+  const leftSafe=box.x-ALL_X0*dispW;
+  let left=leftSafe;
+  const leftCover=stageW-dispW;
+  if(leftCover>left) left=leftCover;
+  if(left>0) left=0;
+  if(left<leftSafe) left=leftSafe;
   const cover=$("mapcover");
   cover.style.width=dispW+"px";
   cover.style.height=dispH+"px";
