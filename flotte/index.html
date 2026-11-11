@@ -12,11 +12,24 @@ button{cursor:pointer;background:none;border:0}
 .screen{position:relative;height:100dvh;overflow:hidden;background:#000}
 .mapstage{position:absolute;inset:0;overflow:hidden;scrollbar-width:none}
 .mapstage::-webkit-scrollbar{display:none}
-.mapcover{position:absolute;top:0;left:50%;transform:translateX(-50%);width:max(100%, calc(100dvh * 2920 / 2064));aspect-ratio:2920 / 2064;container-type:size}
+.mapcover{position:absolute;top:0;left:50%;transform:translateX(-50%);width:max(100%, calc(100dvh * 7912 / 6781));aspect-ratio:7912 / 6781}
 .mapcover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:none;opacity:1;display:block}
 #hots{position:absolute;inset:0;pointer-events:none}
-.hot{position:absolute;z-index:2;background:transparent;padding:0;cursor:pointer;border-radius:10px;pointer-events:auto}
-.plaque{position:absolute;z-index:3;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 .4em;background:#e0e0e0;border:1.5px solid #8a8a8a;border-radius:2px;box-shadow:0 4px 14px rgba(0,0,0,.35);color:#1a1a1a;font-family:"Arial Narrow","Nimbus Sans Narrow","Helvetica Neue",Impact,sans-serif;font-weight:700;font-stretch:condensed;font-size:1.85cqh;letter-spacing:.04em;line-height:1;text-transform:uppercase;white-space:nowrap;pointer-events:none}
+.hot{position:absolute;z-index:2;background:transparent;padding:0;cursor:pointer;pointer-events:auto}
+.fly{position:fixed;z-index:15;width:min(320px,calc(100vw - 16px));overflow:auto;background:#0e0e10;border:1px solid #3a3a3c;border-radius:16px;box-shadow:0 18px 44px rgba(0,0,0,.5);padding:10px 10px 6px}
+.fly[hidden]{display:none}
+.fly-title{margin:2px 6px 8px;font-size:15px;font-weight:600}
+.fly .site{margin:10px 6px 6px}
+.flyrow{padding:8px 8px 7px;margin:0 0 6px;border-radius:12px;background:#141416;border:1px solid #2c2c2e}
+.fly-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.fly-vin{font-size:13px;font-weight:600;letter-spacing:.01em}
+.fly-bat{display:flex;align-items:center;gap:6px;font-size:12px;color:#d1d1d6;white-space:nowrap}
+.bar{width:38px;height:6px;border-radius:99px;background:#2a2a2e;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px}
+.fly-sub{margin-top:3px;font-size:11px;color:#8e8e93}
+.fly-here{margin-top:4px;display:flex;align-items:center;gap:6px;font-size:12px}
+.here{width:8px;height:8px;border-radius:50%;background:#8e8e93;flex:0 0 auto}
+.here.on{background:#3dd68c}
 .topbar{position:absolute;z-index:6;top:10px;left:12px;right:12px;display:flex;align-items:center;gap:10px;pointer-events:none}
 .topbar>*{pointer-events:auto}
 .iconbtn{width:40px;height:40px;flex:0 0 auto;display:grid;place-items:center;color:#f2f2f2;border-radius:50%;background:rgba(12,12,14,.72);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(12px)}
@@ -71,7 +84,7 @@ button{cursor:pointer;background:none;border:0}
 <div class="screen">
   <div class="mapstage" id="mapstage">
     <div class="mapcover" id="mapcover">
-      <img id="basemap" src="carte-alsace.png" alt="Carte de l'Alsace">
+      <img id="basemap" src="carte-alsace-villes.png" alt="Carte de l'Alsace">
       <div id="hots"></div>
     </div>
   </div>
@@ -91,6 +104,7 @@ button{cursor:pointer;background:none;border:0}
   <div class="carousel" id="carousel"></div>
   <div class="dots" id="dots"></div>
 </section>
+<div class="fly" id="fly" hidden></div>
 <aside class="sheet" id="sheet" hidden>
   <div class="sh">
     <div>
@@ -128,6 +142,7 @@ const CENTERS = [
    - status   disponible | en essai | en charge | indisponible
    - battery  pourcentage de batterie
    - winter   true si le véhicule a le pack hiver
+   - surPlace true si le véhicule est sur place
    - x, y     position de départ sur la carte */
 const FLEET = [
   { id:"v01", model:"Model Y", color:"Blanc", swatch:"#f4f1ea", vin:"LRWY0TEST0000001", plate:"FT-101-AL", center:"sxb-sales", status:"disponible", battery:86, winter:true, x:62.0, y:39.3 },
@@ -164,7 +179,10 @@ const FLEET = [
   { id:"v32", model:"Model 3", color:"Bleu", swatch:"#8aa4b5", vin:"LRW30TEST0000032", plate:"FT-653-SX", center:"sar", status:"indisponible", battery:22, winter:false, x:8.9, y:16.9 }
 ];
 
+const PAS_SUR_PLACE=new Set(["v02","v04","v06","v09","v11","v14","v16","v20","v22","v25","v28","v30","v32"]);
+FLEET.forEach(v=>{ v.surPlace=!PAS_SUR_PLACE.has(v.id); });
 const STATUS = { disponible:"Disponible", "en essai":"En essai", "en charge":"En charge", indisponible:"Indisponible" };
+function batColor(n){return n>=70?"#3dd68c":n>=40?"#e4b15a":"#e15d4a"}
 const $=id=>document.getElementById(id);
 const centerById=Object.fromEntries(CENTERS.map(c=>[c.id,c]));
 let scope=null, selected=null, query="";
@@ -175,7 +193,7 @@ function hit(v){
   const q=norm(query).trim();
   if(!q) return true;
   const c=centerById[v.center];
-  const blob=norm([v.model,v.color,v.vin,v.plate,c.city,c.role,v.status,v.winter?"pack hiver":""].join(" "));
+  const blob=norm([v.model,v.color,v.vin,v.plate,c.city,c.role,v.status,v.winter?"pack hiver":"",v.surPlace?"sur place":"pas sur place"].join(" "));
   return blob.includes(q);
 }
 function inScope(v){
@@ -185,14 +203,15 @@ function inScope(v){
 }
 function visible(v){return hit(v)&&inScope(v)}
 
-/* Zone cliquable : cercle blanc et cartouche. Plaques : % du cadre 2920/2064, à droite du cercle. */
+/* Zones invisibles sur le rond ET le nom déjà imprimés. % du cadre 7912×6781. */
 const HOTS=[
-  {city:"Sarrebourg", left:8.1, top:9.2, width:16.8, height:7.2, plaque:{left:11.64, top:10.58, width:13.22, height:3.74}},
-  {city:"Saverne", left:35.2, top:6.6, width:16.8, height:7.2, plaque:{left:38.77, top:8.06, width:13.22, height:3.74}},
-  {city:"Roppenheim", left:78.2, top:5.8, width:16.8, height:7.2, plaque:{left:82.12, top:7.48, width:12.86, height:3.64}},
-  {city:"Strasbourg", left:62.8, top:31.1, width:16.4, height:7.2, plaque:{left:66.24, top:32.87, width:12.86, height:3.64}},
-  {city:"Sélestat", left:48.8, top:69.6, width:16.7, height:7.3, plaque:{left:52.20, top:70.95, width:13.22, height:3.74}}
+  {city:"Sarrebourg", left:23.16, top:12.04, width:12.55, height:5.74},
+  {city:"Saverne", left:42.57, top:13.13, width:9.42, height:5.33},
+  {city:"Roppenheim", left:72.02, top:12.57, width:10.76, height:5.77},
+  {city:"Strasbourg", left:57.89, top:32.24, width:9.95, height:5.54},
+  {city:"Sélestat", left:35.75, top:58.52, width:7.17, height:4.77}
 ];
+let flyCity=null, flySticky=false, flyTimer=null;
 function drawCities(){
   const g=$("hots");
   g.innerHTML="";
@@ -205,17 +224,79 @@ function drawCities(){
     b.style.width=h.width+"%";
     b.style.height=h.height+"%";
     b.setAttribute("aria-label",h.city);
-    b.addEventListener("click",()=>openCity(h.city));
+    b.addEventListener("pointerenter",()=>{
+      if(flySticky && flyCity!==h.city) return;
+      openFly(h.city,false);
+    });
+    b.addEventListener("pointerleave",scheduleFlyClose);
+    b.addEventListener("click",e=>{
+      e.stopPropagation();
+      if(flySticky && flyCity===h.city) closeFly();
+      else openFly(h.city,true);
+    });
     g.append(b);
-    const p=document.createElement("span");
-    p.className="plaque";
-    p.style.left=h.plaque.left+"%";
-    p.style.top=h.plaque.top+"%";
-    p.style.width=h.plaque.width+"%";
-    p.style.height=h.plaque.height+"%";
-    p.textContent=h.city;
-    g.append(p);
   }
+}
+function flyRow(v){
+  const here=v.surPlace;
+  const sub=[v.model,v.plate,v.winter?"pack hiver":""].filter(Boolean).join(" · ");
+  return `<div class="flyrow">
+    <div class="fly-top"><span class="fly-vin">${esc(v.vin)}</span>
+      <span class="fly-bat"><span class="bar"><i style="width:${v.battery}%;background:${batColor(v.battery)}"></i></span>${v.battery} %</span></div>
+    <div class="fly-sub">${esc(sub)}</div>
+    <div class="fly-here"><span class="here${here?" on":""}"></span>${here?"Sur place":"Pas sur place"}</div>
+  </div>`;
+}
+function renderFly(){
+  const rows=FLEET.filter(v=>centerById[v.center].city===flyCity);
+  const box=$("fly");
+  let body="";
+  if(flyCity==="Strasbourg"){
+    body=["sxb-sales","sxb-essai"].map(id=>{
+      const part=rows.filter(v=>v.center===id);
+      return `<h3 class="site">${esc(centerById[id].role)}</h3>`+(part.length?part.map(flyRow).join(""):'<p class="empty">Aucun véhicule.</p>');
+    }).join("");
+  }else body=rows.map(flyRow).join("");
+  box.innerHTML=`<p class="fly-title">${esc(flyCity)}</p>`+body;
+}
+function placeFly(){
+  const btn=[...document.querySelectorAll(".hot")].find(b=>b.getAttribute("aria-label")===flyCity);
+  const fly=$("fly");
+  if(!btn||fly.hidden) return;
+  const r=btn.getBoundingClientRect();
+  const gap=6, pad=8;
+  const below=window.innerHeight-pad-(r.bottom+gap);
+  const above=r.top-gap-pad;
+  const useBelow=below>=150||below>=above;
+  fly.style.maxHeight=Math.max(120, Math.min(480, useBelow?below:above))+"px";
+  fly.style.left="0px";
+  fly.style.top="0px";
+  const w=fly.offsetWidth, h=fly.offsetHeight;
+  let top=useBelow?r.bottom+gap:Math.max(pad, r.top-gap-h);
+  if(top+h>window.innerHeight-pad) top=Math.max(pad, window.innerHeight-pad-h);
+  let left=r.left+r.width/2-w/2;
+  left=Math.min(Math.max(pad,left), window.innerWidth-pad-w);
+  fly.style.left=left+"px";
+  fly.style.top=top+"px";
+}
+function openFly(city,sticky){
+  clearTimeout(flyTimer);
+  flyCity=city;
+  if(sticky) flySticky=true;
+  renderFly();
+  $("fly").hidden=false;
+  placeFly();
+}
+function closeFly(){
+  clearTimeout(flyTimer);
+  flySticky=false;
+  flyCity=null;
+  $("fly").hidden=true;
+}
+function scheduleFlyClose(){
+  if(flySticky) return;
+  clearTimeout(flyTimer);
+  flyTimer=setTimeout(closeFly, 220);
 }
 
 function mini(c){
@@ -264,7 +345,7 @@ function rowHtml(v){
   return `<button type="button" class="row${v.id===selected?" on":""}" data-id="${v.id}">
     <span class="dot" style="background:${v.swatch}"></span>
     <span><b>${esc(v.model)} · ${esc(v.color)}</b>${v.winter?"<span class='flake' title='Pack hiver'>❄</span>":""}
-      <span class="meta">${esc(v.plate)} · ${v.battery} % · ${esc(centerById[v.center].role)}</span></span>
+      <span class="meta">${esc(v.plate)} · ${v.battery} % · ${v.surPlace?"Sur place":"Pas sur place"} · ${esc(centerById[v.center].role)}</span></span>
     <span class="pill">${esc(STATUS[v.status])}</span>
   </button>`;
 }
@@ -324,12 +405,21 @@ function openVehicle(id){
 }
 $("q").addEventListener("input",e=>{
   query=e.target.value;
+  closeFly();
   if(query.trim()){ scope=null; selected=null; openSheet(); }
   else if(!$("sheet").hidden) renderList();
 });
-$("all").addEventListener("click",openAll);
+$("all").addEventListener("click",()=>{ closeFly(); openAll(); });
 $("close").addEventListener("click",()=>{ $("sheet").hidden=true; selected=null; scope=null; });
-document.addEventListener("keydown",e=>{ if(e.key==="Escape") $("close").click(); });
+$("fly").addEventListener("pointerenter",()=>clearTimeout(flyTimer));
+$("fly").addEventListener("pointerleave",scheduleFlyClose);
+document.addEventListener("click",e=>{
+  if(e.target.closest("#fly")||e.target.closest(".hot")) return;
+  closeFly();
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){ closeFly(); $("close").click(); }
+});
 drawCities();
 drawCarousel();
 const portraitQuery=window.matchMedia("(orientation: portrait) and (max-width: 900px)");
@@ -337,8 +427,10 @@ function frameMap(){
   const stage=$("mapstage");
   if(!portraitQuery.matches){ stage.scrollLeft=0; return; }
   const cover=$("mapcover");
-  stage.scrollLeft=Math.max(0, cover.offsetWidth*0.65 - stage.clientWidth/2);
+  stage.scrollLeft=Math.max(0, cover.offsetWidth*0.618 - stage.clientWidth/2);
 }
+$("mapstage").addEventListener("scroll",()=>{ if(flyCity) placeFly(); },{passive:true});
+window.addEventListener("resize",()=>{ if(flyCity) placeFly(); });
 portraitQuery.addEventListener("change", frameMap);
 $("basemap").addEventListener("load", frameMap);
 frameMap();
