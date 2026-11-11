@@ -42,6 +42,12 @@ a{color:inherit}
   filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.85))
 }
 .super img{display:block;width:100%;height:auto;pointer-events:none}
+.citydot{
+  position:absolute;z-index:2;pointer-events:none;
+  width:0.6193%;aspect-ratio:1;transform:translate(-50%,-50%);
+  border-radius:50%;background:#fff;box-sizing:content-box;
+  border:1.25px solid #141414
+}
 .rail{
   position:absolute;z-index:8;
   top:calc(12px + env(safe-area-inset-top, 0px));
@@ -576,6 +582,11 @@ function drawCities(){
       else openFly(h.city,true);
     });
     g.append(b);
+    const dot=document.createElement("span");
+    dot.className="citydot";
+    dot.style.left=h.cx+"%";
+    dot.style.top=h.cy+"%";
+    g.append(dot);
   }
 }
 function fallbackCopy(text){
