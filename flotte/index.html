@@ -21,23 +21,23 @@ a{color:inherit}
 .screen{position:relative;height:100vh;overflow:hidden;background:#1a1817}
 .mapstage{position:absolute;inset:0;overflow:hidden;background:#1a1817}
 .mapcover{position:absolute;top:0;left:0}
-.mapcover img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;filter:none;opacity:1;display:block}
+.mapcover>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;filter:none;opacity:1;display:block}
 #hots{position:absolute;inset:0;pointer-events:none;z-index:2}
 .hot{position:absolute;z-index:2;background:transparent;padding:0;cursor:pointer;pointer-events:auto;overflow:visible}
-.mapcover img.roads{
+.mapcover>img.roads{
   z-index:1;pointer-events:none;opacity:0;transition:opacity 250ms ease;
   --rx:50%;--ry:30%;--rr:180px;
   -webkit-mask-image:radial-gradient(circle var(--rr) at var(--rx) var(--ry), #fff 0%, transparent 100%);
   mask-image:radial-gradient(circle var(--rr) at var(--rx) var(--ry), #fff 0%, transparent 100%);
   -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat
 }
-.mapcover img.roads.on{opacity:.88}
-.mapcover img.super{
-  inset:auto;z-index:3;pointer-events:none;
-  left:38.57%;top:16.31%;width:1.65%;height:auto;
-  transform:translate(-50%,-50%);
+.mapcover>img.roads.on{opacity:.88}
+.super{
+  position:absolute;z-index:3;padding:0;border:0;background:none;cursor:pointer;
+  width:1.65%;height:auto;transform:translate(-50%,-50%);
   filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.85))
 }
+.super img{display:block;width:100%;height:auto;pointer-events:none}
 .nameglow{
   position:absolute;pointer-events:none;opacity:0;
   transition:opacity 200ms ease;
@@ -73,7 +73,7 @@ a{color:inherit}
 .search{
   position:relative;z-index:2;
   display:flex;align-items:center;gap:4px;
-  width:108px;height:40px;
+  width:100%;height:44px;
   background:rgba(255,255,255,.06);
   border:1px solid rgba(255,255,255,.85);
   border-radius:0;
@@ -83,7 +83,7 @@ a{color:inherit}
   transition:transform 180ms ease,color 180ms ease,background-color 180ms ease,border-color 180ms ease
 }
 .search:hover{transform:translateX(6px);color:#fff;background:rgba(255,255,255,.06);border-color:#fff}
-.search input{width:4.8ch;border:0;outline:none;background:transparent;font-size:16px;letter-spacing:.06em;font-variant-numeric:tabular-nums;color:inherit}
+.search input{flex:1;width:auto;min-width:0;border:0;outline:none;background:transparent;font-size:16px;letter-spacing:.06em;font-variant-numeric:tabular-nums;color:inherit}
 .search input::placeholder{color:rgba(255,255,255,.45);letter-spacing:.08em}
 .suggest{
   position:absolute;top:calc(100% + 8px);left:0;
@@ -137,6 +137,7 @@ a{color:inherit}
   border-top-color:#d9d9d9
 }
 .glink.is-empty{cursor:pointer}
+.soon{margin:0;height:44px;display:flex;align-items:center;padding:0 12px;color:rgba(255,255,255,.4);font-size:13px;font-weight:400;border-top:1px solid rgba(255,255,255,.28)}
 .navbtn{
   display:none;position:absolute;z-index:12;
   top:calc(16px + env(safe-area-inset-top, 0px));
@@ -264,7 +265,8 @@ a{color:inherit}
     <div class="mapcover" id="mapcover">
       <img id="basemap" src="carte-alsace-villes-ronds.png" alt="Carte de l'Alsace">
       <img id="roads" class="roads" alt="" decoding="async">
-      <img id="super" class="super" src="logo-superchargeur.webp" alt="Superchargeur" title="Superchargeur" width="64" height="64">
+      <button type="button" class="super" data-id="phal" style="left:38.907%;top:12.664%" aria-label="Superchargeur Phalsbourg" title="Superchargeur Phalsbourg"><img src="logo-superchargeur.webp" alt="" width="64" height="64"></button>
+      <button type="button" class="super" data-id="rop" style="left:94.290%;top:29.457%" aria-label="Superchargeur Roppenheim" title="Superchargeur Roppenheim"><img src="logo-superchargeur.webp" alt="" width="64" height="64"></button>
       <div id="hots"></div>
     </div>
   </div>
@@ -276,8 +278,12 @@ a{color:inherit}
       <div class="suggest" id="suggest" hidden></div>
     </label>
     <div class="gestion">
-      <button type="button" class="gestion-toggle" id="gestion-toggle" aria-expanded="false" aria-controls="gestion-list">GESTION <span class="chev" aria-hidden="true">▾</span></button>
-      <div class="gestion-list" id="gestion-list" hidden></div>
+      <button type="button" class="gestion-toggle" id="liens-toggle" aria-expanded="false" aria-controls="liens-list">LIENS UTILES <span class="chev" aria-hidden="true">▾</span></button>
+      <div class="gestion-list" id="liens-list" hidden></div>
+    </div>
+    <div class="gestion">
+      <button type="button" class="gestion-toggle" id="release-toggle" aria-expanded="false" aria-controls="release-list">RELEASE <span class="chev" aria-hidden="true">▾</span></button>
+      <div class="gestion-list" id="release-list" hidden></div>
     </div>
   </aside>
   <h1 class="wordmark" aria-label="FLEET MAP"><img src="logo-fleet-map-v3.webp" alt="FLEET MAP" width="1294" height="103"></h1>
@@ -289,6 +295,7 @@ a{color:inherit}
   </div>
 </div>
 <div class="fly" id="fly" hidden></div>
+<div class="fly" id="supercard" hidden></div>
 <div class="toast" id="toast" hidden role="status"></div>
 <aside class="sheet" id="sheet" hidden>
   <div class="sh">
@@ -302,9 +309,19 @@ a{color:inherit}
   <div class="list" id="list"></div>
 </aside>
 <script>
-const GESTION_LINKS = {TSS:'', GARAGE:'', REGISTRATION:'', LIVE:'', SMP:''};
-const AR_STRASBOURG = {Sarrebourg:"1 h 35", Saverne:"1 h 10", Roppenheim:"1 h 02", Sélestat:"1 h 33"};
+const LIENS_UTILES_LINKS = {TSS:'', GARAGE:'', REGISTRATION:'', LIVE:'', SMP:''};
+const GESTION_LINKS = LIENS_UTILES_LINKS;
+const RELEASE_LINKS = {};
+const LIENS_KEY="fleet-liens-utiles-active";
 const GESTION_KEY="fleet-gestion-active";
+const AR_STRASBOURG = {Sarrebourg:"1 h 35", Saverne:"1 h 10", Roppenheim:"1 h 02", Sélestat:"1 h 33"};
+/* Temps OSRM aller simple, sans trafic.
+   Phalsbourg : 20 rue de Strasbourg, 48.77279, 7.24324 → Sarrebourg 14,8 min.
+   Roppenheim : The Style Outlets, 1 route de l'Europe, 48.85033, 8.06409 → Roppenheim 15,0 min. */
+const SUPERCHARGERS=[
+  {id:"phal", name:"Superchargeur Phalsbourg", min:15, near:"Sarrebourg"},
+  {id:"rop", name:"Superchargeur Roppenheim", min:15, near:"Roppenheim"}
+];
 /* Centres. x et y : position sur la carte principale (viewBox 0 0 1000 720), nord en haut.
    Les deux sites de Strasbourg sont volontairement proches.
    SIDEKICK peut déplacer un centre sans changer le reste des données. */
@@ -682,22 +699,22 @@ function setMenu(open){
   layoutMap();
   if(flyCity){ placeFly(); setRoads(flyCity); }
 }
-function gestionActive(){
-  try{ return localStorage.getItem(GESTION_KEY)||""; }catch(e){ return ""; }
+function liensActive(){
+  try{ return localStorage.getItem(LIENS_KEY)||localStorage.getItem(GESTION_KEY)||""; }catch(e){ return ""; }
 }
-function selectGestion(name){
-  try{ localStorage.setItem(GESTION_KEY, name); }catch(e){}
-  document.querySelectorAll(".glink").forEach(el=>{
+function selectLien(name){
+  try{ localStorage.setItem(LIENS_KEY, name); }catch(e){}
+  document.querySelectorAll("#liens-list .glink").forEach(el=>{
     const on=el.dataset.key===name;
     el.classList.toggle("is-on", on);
     if(on) el.setAttribute("aria-current","true");
     else el.removeAttribute("aria-current");
   });
 }
-function renderGestion(){
-  const active=gestionActive();
-  const box=$("gestion-list");
-  box.innerHTML=Object.entries(GESTION_LINKS).map(([name,url])=>{
+function renderLinkList(box, links, active, onPick){
+  const entries=Object.entries(links);
+  if(!entries.length){ box.innerHTML='<p class="soon">À venir</p>'; return; }
+  box.innerHTML=entries.map(([name,url])=>{
     const on=name===active;
     const cls="glink"+(url?"":" is-empty")+(on?" is-on":"");
     const current=on?' aria-current="true"':"";
@@ -705,9 +722,30 @@ function renderGestion(){
     return `<a class="${cls}" data-key="${escAttr(name)}" href="#" title="Lien à renseigner"${current}>${esc(name)}</a>`;
   }).join("");
   box.querySelectorAll(".glink").forEach(a=>a.addEventListener("click",e=>{
-    if(!GESTION_LINKS[a.dataset.key]) e.preventDefault();
-    selectGestion(a.dataset.key);
+    if(!links[a.dataset.key]) e.preventDefault();
+    onPick(a.dataset.key);
   }));
+}
+function renderGestion(){
+  renderLinkList($("liens-list"), LIENS_UTILES_LINKS, liensActive(), selectLien);
+  renderLinkList($("release-list"), RELEASE_LINKS, "", ()=>{});
+}
+function closeSuper(){ $("supercard").hidden=true; }
+function openSuper(id, anchor){
+  const s=SUPERCHARGERS.find(x=>x.id===id); if(!s) return;
+  const card=$("supercard");
+  card.innerHTML=`<p class="fly-title"><span>${esc(s.name)}</span><span class="ar">⇄ ${s.min} min · ${esc(s.near)}</span></p>`;
+  card.hidden=false;
+  card.style.width=Math.min(420, window.innerWidth-16)+"px";
+  card.style.left="0px"; card.style.top="0px";
+  const r=anchor.getBoundingClientRect();
+  const w=card.offsetWidth, h=card.offsetHeight, pad=8;
+  let top=r.bottom+8;
+  if(top+h>window.innerHeight-pad) top=Math.max(pad, r.top-8-h);
+  let left=r.left+r.width/2-w/2;
+  left=Math.min(Math.max(pad,left), window.innerWidth-pad-w);
+  card.style.left=left+"px";
+  card.style.top=top+"px";
 }
 
 function rowHtml(v){
@@ -781,23 +819,28 @@ $("fly").addEventListener("pointerenter",()=>clearTimeout(flyTimer));
 $("fly").addEventListener("pointerleave",scheduleFlyClose);
 $("navbtn").addEventListener("click",()=>setMenu(true));
 $("railx").addEventListener("click",()=>setMenu(false));
-$("gestion-toggle").addEventListener("click",()=>{
-  const list=$("gestion-list");
+document.querySelectorAll(".gestion-toggle").forEach(btn=>btn.addEventListener("click",()=>{
+  const list=document.getElementById(btn.getAttribute("aria-controls"));
   const willOpen=list.hidden;
   list.hidden=!willOpen;
-  $("gestion-toggle").setAttribute("aria-expanded", willOpen?"true":"false");
+  btn.setAttribute("aria-expanded", willOpen?"true":"false");
   if(window.matchMedia("(max-width:700px)").matches){
     layoutMap();
     if(flyCity){ placeFly(); setRoads(flyCity); }
   }
-});
+}));
+document.querySelectorAll(".super").forEach(btn=>btn.addEventListener("click",e=>{
+  e.stopPropagation();
+  openSuper(btn.dataset.id, btn);
+}));
 document.addEventListener("click",e=>{
   if(!e.target.closest(".search")) $("suggest").hidden=true;
-  if(e.target.closest("#fly")||e.target.closest(".hot")||e.target.closest(".search")||e.target.closest("#toast")) return;
+  if(!e.target.closest(".super") && !e.target.closest("#supercard")) closeSuper();
+  if(e.target.closest("#fly")||e.target.closest(".hot")||e.target.closest(".search")||e.target.closest("#toast")||e.target.closest("#supercard")) return;
   closeFly();
 });
 document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"){ $("suggest").hidden=true; closeFly(); $("close").click(); }
+  if(e.key==="Escape"){ $("suggest").hidden=true; closeFly(); closeSuper(); $("close").click(); }
 });
 renderGestion();
 drawCities();
