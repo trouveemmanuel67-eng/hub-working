@@ -25,13 +25,19 @@ a{color:inherit}
 #hots{position:absolute;inset:0;pointer-events:none;z-index:2}
 .hot{position:absolute;z-index:2;background:transparent;padding:0;cursor:pointer;pointer-events:auto;overflow:visible}
 .mapcover img.roads{
-  z-index:1;pointer-events:none;opacity:0;transition:opacity 250ms ease;
+  z-index:1;pointer-events:none;opacity:0;mix-blend-mode:screen;transition:opacity 250ms ease;
   --rx:50%;--ry:30%;--rr:180px;
   -webkit-mask-image:radial-gradient(circle var(--rr) at var(--rx) var(--ry), #fff 0%, transparent 100%);
   mask-image:radial-gradient(circle var(--rr) at var(--rx) var(--ry), #fff 0%, transparent 100%);
   -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat
 }
 .mapcover img.roads.on{opacity:.88}
+.nameglow{
+  position:absolute;pointer-events:none;opacity:0;
+  transition:opacity 200ms ease;
+  filter:brightness(1.25) drop-shadow(0 0 6px rgba(255,255,255,.65))
+}
+.hot:hover .nameglow,.hot.on .nameglow{opacity:1}
 .rail{
   position:absolute;z-index:8;
   top:calc(12px + env(safe-area-inset-top, 0px));
@@ -41,16 +47,22 @@ a{color:inherit}
   display:flex;flex-direction:column;align-items:stretch;gap:18px;
   padding:22px;
   color:rgba(255,255,255,.75);
-  background:rgba(10,10,10,.62);
+  text-shadow:0 1px 2px rgba(0,0,0,.8);
+  background:rgba(10,10,10,.45);
   border:1px solid rgba(255,255,255,.85);
   border-top:2px solid rgba(255,255,255,.95);
   border-radius:0;
   box-shadow:0 10px 28px rgba(0,0,0,.45);
-  overflow:visible
+  overflow:visible;
+  transform:translateX(0);
+  transition:transform 220ms ease-out,border-color 220ms ease-out,box-shadow 220ms ease-out
 }
-.rail-head{position:relative}
-.brand{margin:0;line-height:0}
-.brand img{display:block;width:100%;height:auto}
+.rail:hover{
+  transform:translateX(3px);
+  border-color:#fff;
+  border-top-color:#fff;
+  box-shadow:0 10px 28px rgba(0,0,0,.45), 0 0 18px rgba(255,255,255,.18)
+}
 .rail-x{display:none}
 .search{
   position:relative;z-index:2;
@@ -60,8 +72,11 @@ a{color:inherit}
   border:1px solid rgba(255,255,255,.85);
   border-radius:0;
   padding:0 10px;
-  color:rgba(255,255,255,.75)
+  color:rgba(255,255,255,.75);
+  transform:translateX(0);
+  transition:transform 180ms ease,color 180ms ease,background-color 180ms ease,border-color 180ms ease
 }
+.search:hover{transform:translateX(6px);color:#fff;background:rgba(255,255,255,.06);border-color:#fff}
 .search input{width:4.8ch;border:0;outline:none;background:transparent;font-size:16px;letter-spacing:.06em;font-variant-numeric:tabular-nums;color:inherit}
 .search input::placeholder{color:rgba(255,255,255,.45);letter-spacing:.08em}
 .suggest{
@@ -83,9 +98,10 @@ a{color:inherit}
   border:1px solid rgba(255,255,255,.85);
   background:transparent;
   color:#fff;font-size:13px;font-weight:600;letter-spacing:.08em;
-  transition:color 150ms ease,background-color 150ms ease,border-color 150ms ease
+  transform:translateX(0);
+  transition:transform 180ms ease,color 180ms ease,background-color 180ms ease,border-color 180ms ease
 }
-.gestion-toggle:hover{color:#fff}
+.gestion-toggle:not([aria-expanded="true"]):hover{transform:translateX(6px);color:#fff;background:rgba(255,255,255,.06);border-color:#fff}
 .gestion-toggle .chev{opacity:.75;transition:transform 150ms ease}
 .gestion-toggle[aria-expanded="true"]{
   background:#1c1c1c;color:#e6e6e6;font-weight:600;
@@ -101,14 +117,19 @@ a{color:inherit}
   background:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,.55)) top / 100% 1px no-repeat;
   color:rgba(255,255,255,.55);
   font-size:13px;font-weight:400;letter-spacing:.04em;
-  transition:color 150ms ease,background-color 150ms ease,border-color 150ms ease
+  transform:translateX(0);
+  transition:transform 180ms ease,color 180ms ease,background-color 180ms ease,border-color 180ms ease
 }
-.glink:hover{color:rgba(255,255,255,.82)}
+.glink:not(.is-on):hover{
+  transform:translateX(6px);color:#fff;
+  background-color:rgba(255,255,255,.06);
+  background-image:linear-gradient(#fff,#fff);
+  background-size:100% 1px;background-repeat:no-repeat;background-position:top
+}
 .glink.is-on{
   background:#1c1c1c;color:#e6e6e6;font-weight:600;
   border-top-color:#d9d9d9
 }
-.glink.is-on:hover{color:#fff}
 .glink.is-empty{cursor:pointer}
 .navbtn{
   display:none;position:absolute;z-index:12;
@@ -121,7 +142,7 @@ a{color:inherit}
   box-shadow:0 10px 28px rgba(0,0,0,.45)
 }
 .wordmark{
-  position:absolute;z-index:9;margin:0;line-height:0;pointer-events:none;
+  position:absolute;z-index:9;margin:0;line-height:0;pointer-events:none;font-weight:400;
   top:calc(20px + env(safe-area-inset-top, 0px));
   left:calc(244px + (100% - 244px) / 2);
   transform:translateX(-50%);
@@ -148,7 +169,6 @@ a{color:inherit}
     width:32px;height:32px;border-radius:0;color:#fff;
     border:1px solid rgba(255,255,255,.85);background:rgba(10,10,10,.4)
   }
-  .brand{padding-right:36px}
   .herepill .long{display:none}
   .herepill .short{display:inline}
 }
@@ -162,7 +182,8 @@ a{color:inherit}
   padding:8px 8px 4px
 }
 .fly[hidden]{display:none}
-.fly-title{margin:2px 6px 6px;font-size:15px;font-weight:600}
+.fly-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:2px 6px 6px;font-size:15px;font-weight:600}
+.fly-title .ar{margin-left:auto;font-size:12px;font-weight:400;color:rgba(255,255,255,.55);white-space:nowrap}
 .fly .site{margin:8px 6px 4px;font-size:12px;font-weight:500;letter-spacing:.03em;color:#d1d1d6}
 .flyrow{
   height:34px;display:flex;align-items:center;gap:8px;
@@ -222,6 +243,12 @@ a{color:inherit}
 @media(min-width:900px){
   .sheet{left:auto;width:420px;border-left:1px solid #2c2c2e}
 }
+@media (prefers-reduced-motion:reduce){
+  .rail{transition:border-color 220ms ease-out,box-shadow 220ms ease-out}
+  .rail:hover{transform:none}
+  .search,.gestion-toggle,.glink{transition:color 180ms ease,background-color 180ms ease,border-color 180ms ease}
+  .search:hover,.gestion-toggle:hover,.glink:hover{transform:none}
+}
 </style>
 </head>
 <body>
@@ -235,10 +262,7 @@ a{color:inherit}
   </div>
   <button type="button" class="navbtn" id="navbtn" aria-label="Ouvrir le menu" aria-expanded="true">☰</button>
   <aside class="rail open" id="rail">
-    <div class="rail-head">
-      <h1 class="brand" aria-label="FLEET MAP"><img src="logo-fleet-map-v2.webp" alt="FLEET MAP" width="672" height="618"></h1>
-      <button type="button" class="rail-x" id="railx" aria-label="Fermer le menu">✕</button>
-    </div>
+    <button type="button" class="rail-x" id="railx" aria-label="Fermer le menu">✕</button>
     <label class="search"><span aria-hidden="true">⌕</span>
       <input id="q" type="text" inputmode="numeric" maxlength="4" placeholder="VIN" autocomplete="off" aria-label="Rechercher un VIN">
       <div class="suggest" id="suggest" hidden></div>
@@ -248,7 +272,7 @@ a{color:inherit}
       <div class="gestion-list" id="gestion-list" hidden></div>
     </div>
   </aside>
-  <p class="wordmark" aria-hidden="true"><img src="logo-fleet-map-v3.webp" alt="" width="1294" height="103"></p>
+  <h1 class="wordmark" aria-label="FLEET MAP"><img src="logo-fleet-map-v3.webp" alt="FLEET MAP" width="1294" height="103"></h1>
   <div class="tools">
     <button type="button" class="iconbtn" aria-label="Messages">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 6.5h14v9H8l-3 2.5z" stroke-linejoin="round"/></svg>
@@ -271,6 +295,7 @@ a{color:inherit}
 </aside>
 <script>
 const GESTION_LINKS = {TSS:'', GARAGE:'', REGISTRATION:'', LIVE:'', SMP:''};
+const AR_STRASBOURG = {Sarrebourg:"1 h 35", Saverne:"1 h 10", Roppenheim:"1 h 02", Sélestat:"1 h 33"};
 const GESTION_KEY="fleet-gestion-active";
 /* Centres. x et y : position sur la carte principale (viewBox 0 0 1000 720), nord en haut.
    Les deux sites de Strasbourg sont volontairement proches.
@@ -405,6 +430,17 @@ function drawCities(){
     b.style.width=h.width+"%";
     b.style.height=h.height+"%";
     b.setAttribute("aria-label",h.city);
+    const glow=document.createElement("canvas");
+    glow.className="nameglow";
+    glow.dataset.sx=String(h.nx0/100*IMG_W);
+    glow.dataset.sy=String(h.ny0/100*IMG_H);
+    glow.dataset.sw=String((h.nx1-h.nx0)/100*IMG_W);
+    glow.dataset.sh=String((h.ny1-h.ny0)/100*IMG_H);
+    glow.style.left=((h.nx0-h.left)/h.width*100)+"%";
+    glow.style.top=((h.ny0-h.top)/h.height*100)+"%";
+    glow.style.width=((h.nx1-h.nx0)/h.width*100)+"%";
+    glow.style.height=((h.ny1-h.ny0)/h.height*100)+"%";
+    b.append(glow);
     b.addEventListener("pointerenter",()=>{
       if(flySticky && flyCity!==h.city) return;
       openFly(h.city,false);
@@ -492,7 +528,7 @@ function renderFly(){
       return `<h3 class="site">${esc(centerById[id].role)}</h3>`+(part.length?part.map(v=>flyRow(v, flyCity)).join(""):'<p class="empty">Aucun véhicule.</p>');
     }).join("");
   }else body=rows.map(v=>flyRow(v, flyCity)).join("");
-  box.innerHTML=`<p class="fly-title">${esc(flyCity)}</p>`+body;
+  box.innerHTML=flyTitle(flyCity)+body;
   bindRows(box);
 }
 function anchorLow(btn){
@@ -562,31 +598,82 @@ function closeFly(){
   setRoads(null);
 }
 function layoutMap(){
+  const stage=$("mapstage");
+  const stageW=stage.clientWidth, stageH=stage.clientHeight;
+  if(!stageW||!stageH) return;
   const box=usefulBox();
-  const viewW=box.w, viewH=box.h;
-  if(!viewW||!viewH) return;
   const vFrac=Y1-Y0;
-  let scale=viewH/(vFrac*IMG_H);
   const allSpan=(ALL_X1-ALL_X0)*IMG_W+36;
-  if(allSpan*scale>viewW) scale=viewW/allSpan;
+  let scale=stageH/(vFrac*IMG_H);
+  if(allSpan*scale>box.w) scale=box.w/allSpan;
+  const below=box.y>8;
+  if(below){
+    const nameFrac=Math.min(...HOTS.map(h=>h.ny0))/100;
+    scale=Math.max(scale, stageH/IMG_H, stageW/IMG_W, nameFrac?box.y/(nameFrac*IMG_H):0);
+  }else{
+    const safeLeft=box.x;
+    scale=Math.max(
+      scale,
+      ALL_X0?safeLeft/(ALL_X0*IMG_W):0,
+      stageH/IMG_H,
+      stageW/IMG_W,
+      (1-ALL_X0)?(stageW-safeLeft)/((1-ALL_X0)*IMG_W):0,
+      (1-Y0)?stageH/((1-Y0)*IMG_H):0
+    );
+  }
   const dispW=IMG_W*scale, dispH=IMG_H*scale;
-  let top;
-  if(dispH<=viewH+0.5) top=(viewH-dispH)/2;
-  else{
+  let left, top;
+  if(below){
+    const nameFrac=Math.min(...HOTS.map(h=>h.ny0))/100;
+    left=Math.min(0, stageW-dispW);
+    top=box.y-nameFrac*dispH;
+    if(top>0) top=0;
+    if(top+dispH<stageH) top=stageH-dispH;
+    if(top>0) top=0;
+  }else{
+    const leftSafe=box.x-ALL_X0*dispW;
+    left=leftSafe;
+    const leftCover=stageW-dispW;
+    if(leftCover>left) left=leftCover;
+    if(left>0) left=0;
+    if(left<leftSafe) left=leftSafe;
     top=-Y0*dispH;
     if(top>0) top=0;
-    if(top+dispH<viewH) top=viewH-dispH;
+    if(top+dispH<stageH) top=stageH-dispH;
+    if(top>0) top=0;
   }
-  const leftSafe=6-ALL_X0*dispW;
-  let left=leftSafe;
-  const leftCover=viewW-dispW;
-  if(leftCover>left) left=leftCover;
   const cover=$("mapcover");
   cover.style.width=dispW+"px";
   cover.style.height=dispH+"px";
-  cover.style.left=(box.x+left)+"px";
-  cover.style.top=(box.y+top)+"px";
+  cover.style.left=left+"px";
+  cover.style.top=top+"px";
   cover.style.transform="none";
+}
+function paintNames(){
+  const src=$("basemap");
+  if(!src.naturalWidth) return;
+  document.querySelectorAll(".nameglow").forEach(c=>{
+    const sx=+c.dataset.sx, sy=+c.dataset.sy, sw=+c.dataset.sw, sh=+c.dataset.sh;
+    const dw=Math.max(1, Math.round(sw)), dh=Math.max(1, Math.round(sh));
+    c.width=dw; c.height=dh;
+    const ctx=c.getContext("2d",{willReadFrequently:true});
+    ctx.clearRect(0,0,dw,dh);
+    ctx.drawImage(src, sx, sy, sw, sh, 0, 0, dw, dh);
+    const image=ctx.getImageData(0,0,dw,dh);
+    const d=image.data;
+    for(let i=0;i<d.length;i+=4){
+      const y=0.2126*d[i]+0.7152*d[i+1]+0.0722*d[i+2];
+      d[i+3]=y>150?255:0;
+    }
+    ctx.putImageData(image,0,0);
+  });
+}
+function flyTitle(city){
+  const ar=AR_STRASBOURG[city];
+  const side=ar
+    ? `<span class="ar" title="Aller-retour estimé depuis le Tesla Center Strasbourg (Hoenheim), sans trafic">⇄ ${esc(ar)} A/R</span>`
+    : `<span class="ar">Store</span>`;
+  return `<p class="fly-title"><span>${esc(city)}</span>${side}</p>`;
 }
 function scheduleFlyClose(){
   if(flySticky) return;
@@ -721,7 +808,8 @@ document.addEventListener("keydown",e=>{
 renderGestion();
 drawCities();
 layoutMap();
-document.querySelector(".brand img").addEventListener("load",()=>{ layoutMap(); if(flyCity) placeFly(); });
+paintNames();
+$("basemap").addEventListener("load",()=>{ paintNames(); layoutMap(); if(flyCity) placeFly(); });
 requestAnimationFrame(()=>{ const roads=$("roads"); if(!roads.getAttribute("src")) roads.src="carte-alsace-routes.webp"; });
 window.addEventListener("resize",()=>{ layoutMap(); if(flyCity){ placeFly(); setRoads(flyCity); } });
 </script>
