@@ -19,7 +19,7 @@ button,input{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0}
 a{color:inherit}
 .screen{position:relative;height:100vh;overflow:hidden;background:#1a1817}
-.mapstage{position:absolute;inset:0;overflow:hidden;background:#1a1817;cursor:grab;touch-action:none;-webkit-user-drag:none;user-select:none}
+.mapstage{position:absolute;inset:0;overflow:hidden;background:#1a1817;cursor:grab;touch-action:none;-webkit-user-drag:none;-webkit-touch-callout:none;user-select:none}
 .mapstage img,.mapstage canvas{-webkit-user-drag:none;user-select:none}
 .mapcover>img{pointer-events:none}
 .mapstage.panning,.mapstage.panning *{cursor:grabbing}
@@ -72,6 +72,13 @@ a{color:inherit}
   transform:translateX(0);
   transition:transform 220ms ease-out,border-color 220ms ease-out,box-shadow 220ms ease-out
 }
+.rail-body{
+  flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;
+  display:flex;flex-direction:column;gap:18px;
+  scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.4) transparent
+}
+.rail-body::-webkit-scrollbar{width:8px}
+.rail-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.35);border-radius:8px}
 .rail:hover{
   transform:translateX(3px);
   border-color:#fff;
@@ -198,7 +205,11 @@ a{color:inherit}
 .fly[hidden]{display:none}
 .fly-title{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin:2px 4px 6px;font-size:15px;font-weight:600;white-space:nowrap}
 .fly-title .ar{margin-left:auto;font-size:12px;font-weight:400;color:rgba(255,255,255,.55);white-space:nowrap}
-.fly .site{margin:8px 6px 4px;font-size:12px;font-weight:500;letter-spacing:.03em;color:#d1d1d6}
+.fly .grp,.fly .sub{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.fly .grp{margin:8px 4px 4px;font-size:13px;font-weight:600}
+.fly .sub{margin:6px 4px 2px;font-size:12px;font-weight:500;letter-spacing:.03em;color:#d1d1d6}
+.fly .grp .n,.fly .sub .n{margin-left:auto;font-size:12px;font-weight:400;color:rgba(255,255,255,.55)}
+.fleetmenu{z-index:19;max-height:70vh}
 .flyrow{
   height:34px;display:grid;align-items:center;column-gap:3px;
   grid-template-columns:52px 64px 66px 62px 22px;
@@ -287,6 +298,7 @@ a{color:inherit}
     </div>
     <div class="fly" id="fly" hidden></div>
     <div class="fly" id="supercard" hidden></div>
+    <div class="fly fleetmenu" id="fleetmenu" hidden></div>
     </div>
   </div>
   <button type="button" class="navbtn" id="navbtn" aria-label="Ouvrir le menu" aria-expanded="true">☰</button>
@@ -296,6 +308,7 @@ a{color:inherit}
       <input id="q" type="text" inputmode="numeric" maxlength="4" placeholder="VIN" autocomplete="off" aria-label="Rechercher un VIN">
       <div class="suggest" id="suggest" hidden></div>
     </label>
+    <div class="rail-body">
     <div class="gestion">
       <button type="button" class="gestion-toggle" id="liens-toggle" aria-expanded="false" aria-controls="liens-list">LIENS UTILES <span class="chev" aria-hidden="true">▾</span></button>
       <div class="gestion-list" id="liens-list" hidden></div>
@@ -303,6 +316,19 @@ a{color:inherit}
     <div class="gestion">
       <button type="button" class="gestion-toggle" id="release-toggle" aria-expanded="false" aria-controls="release-list">RELEASE <span class="chev" aria-hidden="true">▾</span></button>
       <div class="gestion-list" id="release-list" hidden></div>
+    </div>
+    <div class="gestion">
+      <button type="button" class="gestion-toggle" id="service-toggle" aria-expanded="false" aria-controls="service-list">SERVICE <span class="chev" aria-hidden="true">▾</span></button>
+      <div class="gestion-list" id="service-list" hidden></div>
+    </div>
+    <div class="gestion">
+      <button type="button" class="gestion-toggle" id="verbalisation-toggle" aria-expanded="false" aria-controls="verbalisation-list">VERBALISATION <span class="chev" aria-hidden="true">▾</span></button>
+      <div class="gestion-list" id="verbalisation-list" hidden></div>
+    </div>
+    <div class="gestion">
+      <button type="button" class="gestion-toggle" id="indisponible-toggle" aria-expanded="false" aria-controls="indisponible-list">INDISPONIBLE <span class="chev" aria-hidden="true">▾</span></button>
+      <div class="gestion-list" id="indisponible-list" hidden></div>
+    </div>
     </div>
   </aside>
   <h1 class="wordmark" aria-label="FLEET MAP"><img src="logo-fleet-map-v3.webp" alt="FLEET MAP" width="1294" height="103"></h1>
@@ -329,6 +355,12 @@ a{color:inherit}
 const LIENS_UTILES_LINKS = {TSS:'', GARAGE:'', REGISTRATION:'', LIVE:'', SMP:''};
 const GESTION_LINKS = LIENS_UTILES_LINKS;
 const RELEASE_LINKS = {};
+const SERVICE_LINKS = {};
+const VERBALISATION_LINKS = {};
+const INDISPONIBLE_LINKS = {};
+const SERVICE_KEY="fleet-service-active";
+const VERBALISATION_KEY="fleet-verbalisation-active";
+const INDISPONIBLE_KEY="fleet-indisponible-active";
 const LIENS_KEY="fleet-liens-utiles-active";
 const GESTION_KEY="fleet-gestion-active";
 const AR_STRASBOURG = {Sarrebourg:"1 h 35", Saverne:"1 h 10", Roppenheim:"1 h 02", Sélestat:"1 h 33"};
@@ -558,6 +590,11 @@ function bindRows(root, onCity){
     else started.add(b.dataset.id);
     if(!$("fly").hidden) renderFly();
     if(!$("suggest").hidden) renderSuggest();
+    if(!$("fleetmenu").hidden){
+      const top=$("fleetmenu").scrollTop;
+      renderFleetMenu();
+      $("fleetmenu").scrollTop=top;
+    }
   }));
   if(!onCity) return;
   root.querySelectorAll(".flyrow").forEach(row=>row.addEventListener("click",e=>{
@@ -630,6 +667,7 @@ function markHot(){
 }
 function openFly(city,sticky){
   closeSuper();
+  closeFleetMenu();
   clearTimeout(flyTimer);
   flyCity=city;
   if(sticky) flySticky=true;
@@ -802,9 +840,64 @@ function renderLinkList(box, links, active, onPick){
     onPick(a.dataset.key);
   }));
 }
+function pickStored(listId, key, name){
+  try{ localStorage.setItem(key, name); }catch(e){}
+  document.querySelectorAll("#"+listId+" .glink").forEach(el=>{
+    const on=el.dataset.key===name;
+    el.classList.toggle("is-on", on);
+    if(on) el.setAttribute("aria-current","true");
+    else el.removeAttribute("aria-current");
+  });
+}
+function stored(key){
+  try{ return localStorage.getItem(key)||""; }catch(e){ return ""; }
+}
 function renderGestion(){
   renderLinkList($("liens-list"), LIENS_UTILES_LINKS, liensActive(), selectLien);
   renderLinkList($("release-list"), RELEASE_LINKS, "", ()=>{});
+  renderLinkList($("service-list"), SERVICE_LINKS, stored(SERVICE_KEY), name=>pickStored("service-list", SERVICE_KEY, name));
+  renderLinkList($("verbalisation-list"), VERBALISATION_LINKS, stored(VERBALISATION_KEY), name=>pickStored("verbalisation-list", VERBALISATION_KEY, name));
+  renderLinkList($("indisponible-list"), INDISPONIBLE_LINKS, stored(INDISPONIBLE_KEY), name=>pickStored("indisponible-list", INDISPONIBLE_KEY, name));
+}
+function fleetHead(label, n, sub){
+  return `<p class="${sub?"sub":"grp"}"><span>${esc(label)}</span><span class="n">${n}</span></p>`;
+}
+function vehiclesIn(city){
+  return FLEET.filter(v=>centerById[v.center].city===city);
+}
+function renderFleetMenu(){
+  const store=vehiclesIn("Strasbourg");
+  const trials=["Sarrebourg","Saverne","Roppenheim","Sélestat"].map(city=>({city, rows:vehiclesIn(city)}));
+  const trialN=trials.reduce((n,g)=>n+g.rows.length,0);
+  $("fleetmenu").innerHTML=fleetHead("Store", store.length)+store.map(v=>flyRow(v,"Strasbourg")).join("")
+    +fleetHead("Centres d'essai libre-service", trialN)
+    +trials.map(g=>fleetHead(g.city, g.rows.length, true)+g.rows.map(v=>flyRow(v, g.city)).join("")).join("");
+  bindRows($("fleetmenu"));
+}
+let fleetAt=null, holdTimer=null, fleetFromHold=false, blockContext=false;
+function closeFleetMenu(){
+  $("fleetmenu").hidden=true;
+  fleetAt=null;
+}
+function placeFleetMenu(){
+  const box=$("fleetmenu");
+  if(box.hidden||!fleetAt) return;
+  const pad=8, w=box.offsetWidth, h=box.offsetHeight;
+  const left=Math.min(Math.max(pad, fleetAt.x), window.innerWidth-pad-w);
+  const top=Math.min(Math.max(pad, fleetAt.y), window.innerHeight-pad-h);
+  box.style.left=(left-panX)+"px";
+  box.style.top=(top-panY)+"px";
+}
+function openFleetMenu(x, y){
+  closeFly();
+  closeSuper();
+  fleetAt={x, y};
+  const box=$("fleetmenu");
+  renderFleetMenu();
+  box.hidden=false;
+  box.style.left="0px";
+  box.style.top="0px";
+  placeFleetMenu();
 }
 function closeSuper(){
   clearTimeout(superTimer);
@@ -822,6 +915,7 @@ function openSuper(id, anchor){
   if(panPtr&&panPtr.moved) return;
   if($("mapstage").classList.contains("panning")) return;
   closeFly();
+  closeFleetMenu();
   const s=SUPERCHARGERS.find(x=>x.id===id); if(!s) return;
   clearTimeout(superTimer);
   const card=$("supercard");
@@ -950,17 +1044,27 @@ const stage=$("mapstage");
 stage.addEventListener("dragstart",e=>{ e.preventDefault(); });
 stage.addEventListener("pointerdown",e=>{
   if(e.pointerType==="mouse" && e.button!==0) return;
-  if(e.target.closest("#fly")||e.target.closest("#supercard")) return;
+  if(e.target.closest("#fly")||e.target.closest("#supercard")||e.target.closest("#fleetmenu")) return;
   const interactive=e.target.closest("button, input, textarea, select, a, label");
   if(!interactive) e.preventDefault();
   panPtr={id:e.pointerId, x:e.clientX, y:e.clientY, ox:panX, oy:panY, moved:false};
   if(!interactive) stage.setPointerCapture(e.pointerId);
+  if(e.pointerType==="touch"){
+    const x=e.clientX, y=e.clientY;
+    clearTimeout(holdTimer);
+    holdTimer=setTimeout(()=>{
+      fleetFromHold=true;
+      openFleetMenu(x, y);
+      setTimeout(()=>{ fleetFromHold=false; }, 700);
+    }, 500);
+  }
 });
 function movePan(e){
   if(!panPtr||e.pointerId!==panPtr.id) return;
   const dx=e.clientX-panPtr.x, dy=e.clientY-panPtr.y;
   if(!panPtr.moved && Math.hypot(dx,dy)<=5) return;
-  if(!panPtr.moved) closeSuper();
+  clearTimeout(holdTimer);
+  if(!panPtr.moved){ closeSuper(); closeFleetMenu(); }
   if(!stage.hasPointerCapture(e.pointerId)) stage.setPointerCapture(e.pointerId);
   panPtr.moved=true;
   stage.classList.add("panning");
@@ -970,9 +1074,10 @@ stage.addEventListener("pointermove",movePan);
 document.addEventListener("pointermove",movePan);
 function endPan(e){
   if(!panPtr||e.pointerId!==panPtr.id) return;
-  if(panPtr.moved) suppressClick=true;
+  if(panPtr.moved){ suppressClick=true; blockContext=true; }
   panPtr=null;
   stage.classList.remove("panning");
+  clearTimeout(holdTimer);
 }
 stage.addEventListener("pointerup",endPan);
 stage.addEventListener("pointercancel",endPan);
@@ -984,18 +1089,30 @@ stage.addEventListener("click",e=>{
   e.stopPropagation();
 }, true);
 stage.addEventListener("dblclick",e=>{
-  if(e.target.closest("#fly")||e.target.closest("#supercard")) return;
+  if(e.target.closest("#fly")||e.target.closest("#supercard")||e.target.closest("#fleetmenu")) return;
   resetPan();
 });
-stage.addEventListener("wheel",e=>{ e.preventDefault(); }, {passive:false});
+stage.addEventListener("wheel",e=>{
+  if(e.target.closest("#fleetmenu")||e.target.closest("#fly")||e.target.closest("#supercard")) return;
+  e.preventDefault();
+}, {passive:false});
+stage.addEventListener("contextmenu",e=>{
+  e.preventDefault();
+  if(fleetFromHold) return;
+  if(blockContext){ blockContext=false; return; }
+  if(panPtr&&panPtr.moved) return;
+  if(!$("fleetmenu").hidden){ closeFleetMenu(); return; }
+  openFleetMenu(e.clientX, e.clientY);
+});
 document.addEventListener("click",e=>{
   if(!e.target.closest(".search")) $("suggest").hidden=true;
   if(!e.target.closest(".super") && !e.target.closest("#supercard")) closeSuper();
-  if(e.target.closest("#fly")||e.target.closest(".hot")||e.target.closest(".search")||e.target.closest("#toast")||e.target.closest("#supercard")) return;
+  if(!e.target.closest("#fleetmenu")) closeFleetMenu();
+  if(e.target.closest("#fly")||e.target.closest(".hot")||e.target.closest(".search")||e.target.closest("#toast")||e.target.closest("#supercard")||e.target.closest("#fleetmenu")) return;
   closeFly();
 });
 document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"){ $("suggest").hidden=true; closeFly(); closeSuper(); $("close").click(); }
+  if(e.key==="Escape"){ $("suggest").hidden=true; closeFly(); closeSuper(); closeFleetMenu(); $("close").click(); }
 });
 renderGestion();
 drawCities();
