@@ -10,8 +10,8 @@
 <meta property="og:title" content="FLEET MAP">
 <meta property="og:image" content="https://trouveemmanuel67-eng.github.io/hub-working/flotte/logo-fleet-map-header.webp">
 <meta property="og:image:type" content="image/webp">
-<meta property="og:image:width" content="420">
-<meta property="og:image:height" content="383">
+<meta property="og:image:width" content="447">
+<meta property="og:image:height" content="410">
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;height:100vh;overflow:hidden;background:#1a1817;color:#fff;font-family:Inter,"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:400}
@@ -57,18 +57,17 @@ button{cursor:pointer;background:none;border:0}
 .fly-here{margin-top:4px;display:flex;align-items:center;gap:6px;font-size:12px}
 .here{width:8px;height:8px;border-radius:50%;background:#8e8e93;flex:0 0 auto}
 .here.on{background:#3dd68c}
-.topbar{position:absolute;z-index:8;top:8px;left:14px;right:14px;height:46px;display:flex;align-items:center;justify-content:space-between;gap:12px;pointer-events:none;overflow:visible}
+.topbar{position:absolute;z-index:8;top:calc(12px + env(safe-area-inset-top, 0px));left:calc(12px + env(safe-area-inset-left, 0px));right:calc(12px + env(safe-area-inset-right, 0px));height:46px;display:flex;align-items:center;justify-content:flex-end;gap:12px;pointer-events:none;overflow:visible}
 .topbar>*{pointer-events:auto}
-.brand{margin:0;line-height:0;pointer-events:none;flex:0 1 auto}
-.brand img{display:block;width:112px;height:auto;filter:drop-shadow(0 2px 5px rgba(0,0,0,.7))}
+.brand{position:absolute;left:0;top:0;margin:0;line-height:0;pointer-events:none}
+.brand img{display:block;width:149px;height:auto;filter:drop-shadow(0 2px 5px rgba(0,0,0,.7))}
 .search{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:7;display:flex;align-items:center;gap:4px;width:108px;background:rgba(12,12,14,.72);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:8px 10px;backdrop-filter:blur(12px)}
 .iconbtn{width:40px;height:40px;flex:0 0 auto;display:grid;place-items:center;color:#f2f2f2;border-radius:50%;background:rgba(12,12,14,.72);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(12px)}
 .avatar{width:40px;height:40px;flex:0 0 auto;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(12,12,14,.72);display:grid;place-items:center;backdrop-filter:blur(12px)}
 .avatar span{font-size:11px;letter-spacing:.04em;color:#d1d1d6}
 .tools{display:flex;align-items:center;gap:10px;flex:0 0 auto}
 @media (max-width:720px){
-  .brand img{width:84px}
-  .topbar{top:6px;left:10px;right:10px}
+  .brand img{width:102px}
 }
 .search input{width:4.8ch;border:0;outline:none;background:transparent;font-size:16px;letter-spacing:.06em;font-variant-numeric:tabular-nums}
 .search input::placeholder{color:rgba(255,255,255,.5);letter-spacing:.08em}
@@ -112,7 +111,7 @@ button{cursor:pointer;background:none;border:0}
     </div>
   </div>
   <div class="topbar">
-    <h1 class="brand" aria-label="FLEET MAP"><img src="logo-fleet-map-header.webp" alt="FLEET MAP" width="420" height="383"></h1>
+    <h1 class="brand" aria-label="FLEET MAP"><img src="logo-fleet-map-header.webp" alt="FLEET MAP" width="447" height="410"></h1>
     <label class="search"><span aria-hidden="true">⌕</span>
       <input id="q" type="text" inputmode="numeric" maxlength="4" placeholder="VIN" autocomplete="off" aria-label="Rechercher un VIN">
       <div class="suggest" id="suggest" hidden></div>
