@@ -24,7 +24,7 @@ iframe{flex:1;width:100%;border:0;background:transparent;display:none;max-width:
 .notice-btn:hover,.notice-btn:focus-visible,.notice-btn[aria-expanded=true]{transform:scale(1.06);z-index:2;color:#fff;text-shadow:0 0 6px rgba(255,255,255,.95),0 0 14px rgba(160,210,255,.7),0 0 26px rgba(120,190,255,.45);box-shadow:0 0 0 1px rgba(210,235,255,.5),0 0 16px rgba(140,200,255,.4),0 0 32px rgba(160,210,255,.22);background:rgba(255,255,255,.18)}
 .notice-btn::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(105deg,transparent 35%,rgba(220,240,255,.8) 50%,transparent 65%);background-size:220% 100%;background-position:130% 0;opacity:0}
 .notice-btn:hover::after,.notice-btn:focus-visible::after{opacity:1;animation:hubSpark .9s cubic-bezier(.22,.61,.36,1) 1}
-.notice-menu{position:absolute;top:calc(100% + 8px);right:0;width:min(420px,calc(100vw - 28px));max-height:min(70vh,540px);overflow:auto;padding:8px;background:rgba(8,14,22,.82);border:1px solid rgba(255,255,255,.38);border-radius:12px;box-shadow:0 16px 40px rgba(0,0,0,.45),0 0 0 1px rgba(210,235,255,.16);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);color:#fff}
+.notice-menu{position:absolute;top:calc(100% + 8px);right:0;width:min(420px,calc(100vw - 28px));max-height:calc(100vh - 60px);overflow:auto;padding:8px;background:rgba(8,14,22,.82);border:1px solid rgba(255,255,255,.38);border-radius:12px;box-shadow:0 16px 40px rgba(0,0,0,.45),0 0 0 1px rgba(210,235,255,.16);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);color:#fff}
 .notice-item{border-radius:10px}
 .notice-entry{appearance:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;width:100%;margin:0;padding:10px 12px;border:0;border-radius:10px;background:transparent;color:#fff;font:inherit;font-size:14px;font-weight:600;letter-spacing:.04em;text-align:left;position:relative;isolation:isolate;transition:transform .25s cubic-bezier(.22,.61,.36,1),box-shadow .25s cubic-bezier(.22,.61,.36,1),background-color .25s cubic-bezier(.22,.61,.36,1)}
 .notice-entry:hover,.notice-entry:focus-visible,.notice-entry[aria-expanded=true]{transform:scale(1.03);z-index:2;background:rgba(255,255,255,.12);box-shadow:0 0 0 1px rgba(210,235,255,.45),0 0 14px rgba(140,200,255,.3);outline:none}
@@ -52,6 +52,24 @@ body.compact .notice-btn{padding:4px 12px;font-size:11px}
 <p><strong>C’est quoi ?</strong> Le taux de la tranche d’impôt sur le revenu la plus haute atteinte par le foyer : 0 %, 11 %, 30 %, 41 % ou 45 %. Chaque euro de charge déductible fait économiser environ ce pourcentage en impôt.</p>
 <p><strong>Comment le trouver ?</strong> Sur le dernier avis d’impôt sur le revenu, à la ligne « Taux marginal d’imposition ». Attention : ce n’est pas le taux du prélèvement à la source. En cas de doute, l’expert-comptable du client peut le confirmer.</p>
 <p><strong>À savoir :</strong> en micro-BNC, les frais de véhicule sont déjà couverts par l’abattement forfaitaire de 34 % ; la déduction réelle concerne la déclaration contrôlée.</p>
+</div>
+</div>
+<div class="notice-item" data-notice="is">
+<button type="button" class="notice-entry" aria-expanded="false" aria-controls="notice-is">Déduction d’IS<span class="notice-caret" aria-hidden="true">▶</span></button>
+<div class="notice-body" id="notice-is" hidden>
+<p class="notice-title">Déduction d’IS — Impôt sur les sociétés</p>
+<p><strong>C’est quoi ?</strong> L’impôt sur les sociétés (IS) est prélevé sur les bénéfices de la société. Le taux normal est de 25 %. Un taux réduit de 15 % peut s’appliquer, sous conditions, sur la fraction de bénéfice allant jusqu’à 42 500 € : chiffre d’affaires au plus égal à 10 millions d’euros, capital entièrement libéré et détenu à 75 % au moins par des personnes physiques. Au-delà, le taux est de 25 %.</p>
+<p><strong>Comment le trouver / le calculer ?</strong> Quand une société achète une Tesla (voiture particulière), elle amortit le véhicule : seule la fraction du prix TTC dans la limite du plafond fiscal est déductible. Pour un véhicule électrique à 0 g de CO2 (émissions inférieures à 20 g/km, norme WLTP), ce plafond est de 30 000 €. La part au-dessus est réintégrée chaque année au résultat imposable. En crédit-bail ou location (hors location courte de trois mois non renouvelable), le même plafond s’applique à la part de loyer correspondant à l’amortissement du bailleur. Si la batterie est facturée ou identifiée séparément, elle n’entre pas dans ce plafond.</p>
+<p><strong>À savoir :</strong> l’onglet TCO du HUB estime la mensualité nette d’IS et l’économie d’impôt selon ces règles. À valider avec l’expert-comptable du client.</p>
+</div>
+</div>
+<div class="notice-item" data-notice="ik">
+<button type="button" class="notice-entry" aria-expanded="false" aria-controls="notice-ik">Indemnités kilométriques<span class="notice-caret" aria-hidden="true">▶</span></button>
+<div class="notice-body" id="notice-ik" hidden>
+<p class="notice-title">Indemnités kilométriques — Barème fiscal</p>
+<p><strong>C’est quoi ?</strong> Le barème kilométrique de l’administration fiscale évalue les frais de déplacement professionnel avec un véhicule personnel : dépréciation, entretien, pneumatiques, carburant et assurance. Pour un véhicule 100 % électrique, ce barème est majoré de 20 %. Les péages, le stationnement et les intérêts d’emprunt peuvent s’y ajouter, sur justificatifs. Pour un véhicule électrique, la location de la batterie et les frais de recharge sont déjà compris dans le barème.</p>
+<p><strong>Comment le trouver / le calculer ?</strong> Le barème 2026, inchangé par rapport à 2025, est publié par l’administration. Il dépend de la puissance fiscale et des kilomètres professionnels. Il concerne notamment les salariés qui optent pour les frais réels plutôt que la déduction forfaitaire de 10 % (minimum 509 €, maximum 14 555 € par personne) et les entrepreneurs individuels imposés en BNC, lorsque le véhicule appartient au salarié, à son conjoint ou à un membre du foyer fiscal. L’onglet IK du HUB applique ce barème.</p>
+<p><strong>À savoir :</strong> en micro-BNC, l’abattement forfaitaire de 34 % couvre déjà les frais de véhicule ; la déduction au réel (barème) concerne la déclaration contrôlée. À valider avec l’expert-comptable du client.</p>
 </div>
 </div>
 </div>
