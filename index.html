@@ -3,7 +3,7 @@
 body{display:flex;flex-direction:column;color:#ffffff;font-family:Inter,"Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;background:#000000}
 #hbg{position:fixed;inset:0;z-index:-1;background-color:#0c1016;background-image:url("bg-storm.jpg");background-image:image-set(url("bg-storm.webp") type("image/webp"),url("bg-storm.jpg") type("image/jpeg"));background-position:right bottom;background-size:cover;background-repeat:no-repeat}
 #hbg:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,12,18,.34) 0%,rgba(8,12,18,.10) 26%,rgba(8,12,18,.04) 52%,rgba(8,12,18,0) 100%),linear-gradient(90deg,rgba(8,12,18,.20) 0%,rgba(8,12,18,.06) 50%,rgba(8,12,18,0) 100%)}
-#hh{text-align:center;padding:12px 12px 8px;transition:.2s;background:transparent}
+#hh{position:relative;z-index:30;text-align:center;padding:12px 12px 8px;transition:.2s;background:transparent}
 #hh h1{margin:0 0 10px;line-height:0}#hh h1 img{display:block;margin:0 auto;height:40px;width:auto;filter:drop-shadow(0 1px 10px rgba(0,0,0,.45))}
 nav{display:inline-flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;border:0;background:transparent;border-radius:0;overflow:visible}
 nav a{display:inline-flex;align-items:center;padding:6px 14px;color:#fff;text-decoration:none;letter-spacing:.01em;text-transform:none;font-size:14px;font-weight:500;border-radius:999px}
@@ -18,8 +18,45 @@ nav a:hover,nav a:focus-visible{animation:hubFlicker 1.6s ease-in-out infinite}
 @media (prefers-reduced-motion:reduce){nav a,nav a::after,nav a:hover,nav a:focus-visible{transition:none;animation:none;transform:none}nav a:hover,nav a:focus-visible{background:rgba(255,255,255,.18);text-shadow:0 0 8px rgba(200,230,255,.45);box-shadow:0 0 0 1px rgba(200,230,255,.4)}nav a::after{opacity:0}}
 body.compact #hh{padding:6px 12px 4px}body.compact #hh h1{margin:0 0 4px}body.compact #hh h1 img{height:24px}body.compact nav a{padding:4px 12px;font-size:12px}
 iframe{flex:1;width:100%;border:0;background:transparent;display:none;max-width:100%}iframe.on{display:block}
+.notice-root{position:absolute;top:10px;right:14px;z-index:50;text-align:left}
+.notice-backdrop{position:fixed;inset:0;z-index:25;background:transparent}
+.notice-btn{appearance:none;cursor:pointer;padding:6px 14px;border-radius:999px;color:#fff;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.42);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);font:inherit;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;position:relative;isolation:isolate;z-index:1;transition:transform .25s cubic-bezier(.22,.61,.36,1),box-shadow .25s cubic-bezier(.22,.61,.36,1),text-shadow .25s cubic-bezier(.22,.61,.36,1),background-color .25s cubic-bezier(.22,.61,.36,1)}
+.notice-btn:hover,.notice-btn:focus-visible,.notice-btn[aria-expanded=true]{transform:scale(1.06);z-index:2;color:#fff;text-shadow:0 0 6px rgba(255,255,255,.95),0 0 14px rgba(160,210,255,.7),0 0 26px rgba(120,190,255,.45);box-shadow:0 0 0 1px rgba(210,235,255,.5),0 0 16px rgba(140,200,255,.4),0 0 32px rgba(160,210,255,.22);background:rgba(255,255,255,.18)}
+.notice-btn::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(105deg,transparent 35%,rgba(220,240,255,.8) 50%,transparent 65%);background-size:220% 100%;background-position:130% 0;opacity:0}
+.notice-btn:hover::after,.notice-btn:focus-visible::after{opacity:1;animation:hubSpark .9s cubic-bezier(.22,.61,.36,1) 1}
+.notice-menu{position:absolute;top:calc(100% + 8px);right:0;width:min(420px,calc(100vw - 28px));max-height:min(70vh,540px);overflow:auto;padding:8px;background:rgba(8,14,22,.82);border:1px solid rgba(255,255,255,.38);border-radius:12px;box-shadow:0 16px 40px rgba(0,0,0,.45),0 0 0 1px rgba(210,235,255,.16);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);color:#fff}
+.notice-item{border-radius:10px}
+.notice-entry{appearance:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;width:100%;margin:0;padding:10px 12px;border:0;border-radius:10px;background:transparent;color:#fff;font:inherit;font-size:14px;font-weight:600;letter-spacing:.04em;text-align:left;position:relative;isolation:isolate;transition:transform .25s cubic-bezier(.22,.61,.36,1),box-shadow .25s cubic-bezier(.22,.61,.36,1),background-color .25s cubic-bezier(.22,.61,.36,1)}
+.notice-entry:hover,.notice-entry:focus-visible,.notice-entry[aria-expanded=true]{transform:scale(1.03);z-index:2;background:rgba(255,255,255,.12);box-shadow:0 0 0 1px rgba(210,235,255,.45),0 0 14px rgba(140,200,255,.3);outline:none}
+.notice-entry::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(105deg,transparent 35%,rgba(220,240,255,.7) 50%,transparent 65%);background-size:220% 100%;background-position:130% 0;opacity:0}
+.notice-entry:hover::after,.notice-entry:focus-visible::after{opacity:1;animation:hubSpark .9s cubic-bezier(.22,.61,.36,1) 1}
+.notice-entry .notice-caret{flex:0 0 auto;margin-left:8px;font-size:10px;opacity:.8;transition:transform .2s ease}
+.notice-entry[aria-expanded=true] .notice-caret{transform:rotate(90deg)}
+.notice-body{padding:4px 12px 12px;color:rgba(255,255,255,.88);font-size:13px;line-height:1.55}
+.notice-title{margin:0 0 8px;color:#fff;font-size:14px;font-weight:700;letter-spacing:.01em;line-height:1.35}
+.notice-body p{margin:0 0 8px}
+.notice-body p:last-child{margin:0}
+.notice-body strong{color:#fff;font-weight:650}
+@media (prefers-reduced-motion:reduce){.notice-btn,.notice-btn::after,.notice-entry,.notice-entry::after,.notice-caret{transition:none;animation:none;transform:none}.notice-btn:hover,.notice-btn:focus-visible,.notice-btn[aria-expanded=true],.notice-entry:hover,.notice-entry:focus-visible,.notice-entry[aria-expanded=true]{transform:none}.notice-btn::after,.notice-entry::after{opacity:0}}
+body.compact .notice-root{top:6px;right:12px}
+body.compact .notice-btn{padding:4px 12px;font-size:11px}
 </style></head><body><div id="hbg"></div>
-<header id="hh"><h1><img src="logo-hub.png?v=2" alt="HUB CENTER" width="874" height="105"></h1><nav><a href="#pdf" id="tpdf">Sélectionneur PDF</a><a href="#credit" id="tcredit">Simulateur crédit</a><a href="#elec" id="telec">Simulateur électricité</a><a href="#btob" id="tbtob">TCO</a><a href="#ik" id="tik">IK</a></nav></header>
+<header id="hh"><h1><img src="logo-hub.png?v=2" alt="HUB CENTER" width="874" height="105"></h1><nav><a href="#pdf" id="tpdf">Sélectionneur PDF</a><a href="#credit" id="tcredit">Simulateur crédit</a><a href="#elec" id="telec">Simulateur électricité</a><a href="#btob" id="tbtob">TCO</a><a href="#ik" id="tik">IK</a></nav><div class="notice-root" id="noticeRoot">
+<button type="button" class="notice-btn" id="noticeBtn" aria-expanded="false" aria-controls="noticeMenu" aria-haspopup="true">NOTICE</button>
+<div class="notice-menu" id="noticeMenu" hidden>
+<div class="notice-list">
+<div class="notice-item" data-notice="tmi">
+<button type="button" class="notice-entry" aria-expanded="false" aria-controls="notice-tmi">TMI<span class="notice-caret" aria-hidden="true">▶</span></button>
+<div class="notice-body" id="notice-tmi" hidden>
+<p class="notice-title">TMI — Taux marginal d’imposition</p>
+<p><strong>C’est quoi ?</strong> Le taux de la tranche d’impôt sur le revenu la plus haute atteinte par le foyer : 0 %, 11 %, 30 %, 41 % ou 45 %. Chaque euro de charge déductible fait économiser environ ce pourcentage en impôt.</p>
+<p><strong>Comment le trouver ?</strong> Sur le dernier avis d’impôt sur le revenu, à la ligne « Taux marginal d’imposition ». Attention : ce n’est pas le taux du prélèvement à la source. En cas de doute, l’expert-comptable du client peut le confirmer.</p>
+<p><strong>À savoir :</strong> en micro-BNC, les frais de véhicule sont déjà couverts par l’abattement forfaitaire de 34 % ; la déduction réelle concerne la déclaration contrôlée.</p>
+</div>
+</div>
+</div>
+</div>
+</div></header>
 <iframe id="fpdf" title="Sélectionneur PDF" allow="clipboard-write"></iframe><iframe id="fcredit" title="Simulateur crédit" allow="clipboard-write"></iframe><iframe id="felec" title="Simulateur électricité" allow="clipboard-write"></iframe><iframe id="fbtob" title="TCO" allow="clipboard-write"></iframe><iframe id="fik" title="IK" allow="clipboard-write"></iframe>
 <script type="text/plain" id="pdfw">/**
  * @licstart The following is the entire license notice for the
@@ -53,4 +90,52 @@ function cp(){const d=F.pdf.contentDocument;document.body.classList.toggle('comp
 function cur(){const h=location.hash.slice(1);return h==='credit'||h==='elec'||h==='ik'?h:h==='btob'||h==='tco'||h==='amortissement'?'btob':'pdf'}
 function route(){const c=cur();for(const k in F){F[k].classList.toggle('on',k===c);document.getElementById('t'+k).classList.toggle('on',k===c)}cp()}
 addEventListener('hashchange',route);route();
+(function(){
+  const root=document.getElementById('noticeRoot');
+  const btn=document.getElementById('noticeBtn');
+  const menu=document.getElementById('noticeMenu');
+  if(!root||!btn||!menu)return;
+  let bd=document.getElementById('noticeBackdrop');
+  if(!bd){bd=document.createElement('div');bd.id='noticeBackdrop';bd.className='notice-backdrop';bd.hidden=true;document.body.appendChild(bd);}
+  const entries=[...menu.querySelectorAll('.notice-entry')];
+  function collapseAll(){
+    entries.forEach(e=>{
+      e.setAttribute('aria-expanded','false');
+      const p=document.getElementById(e.getAttribute('aria-controls'));
+      if(p)p.hidden=true;
+    });
+  }
+  function closeMenu(){
+    if(menu.hidden)return;
+    menu.hidden=true;
+    btn.setAttribute('aria-expanded','false');
+    bd.hidden=true;
+    collapseAll();
+  }
+  function openMenu(){
+    menu.hidden=false;
+    btn.setAttribute('aria-expanded','true');
+    bd.hidden=false;
+  }
+  bd.addEventListener('click',()=>closeMenu());
+  btn.addEventListener('click',e=>{e.stopPropagation();if(menu.hidden)openMenu();else closeMenu()});
+  document.addEventListener('click',e=>{if(!root.contains(e.target))closeMenu()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeMenu();btn.focus()}});
+  entries.forEach(entry=>{
+    entry.addEventListener('click',e=>{
+      e.stopPropagation();
+      const panel=document.getElementById(entry.getAttribute('aria-controls'));
+      const open=entry.getAttribute('aria-expanded')==='true';
+      entries.forEach(x=>{
+        if(x!==entry){
+          x.setAttribute('aria-expanded','false');
+          const p=document.getElementById(x.getAttribute('aria-controls'));
+          if(p)p.hidden=true;
+        }
+      });
+      entry.setAttribute('aria-expanded',open?'false':'true');
+      if(panel)panel.hidden=open;
+    });
+  });
+})();
 </script></body></html>
